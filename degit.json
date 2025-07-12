@@ -7,6 +7,6 @@
     ".github/**/*",
     "*.md",
     "**/.vscode/**/*",
-    "devcontainer-vibe.code-workspace"
+    "*.code-workspace"
   ]
 }
