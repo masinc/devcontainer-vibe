@@ -1,0 +1,12 @@
+{
+  "exclude": [
+    "README.md",
+    "LICENSE",
+    "examples/**/*",
+    ".git/**/*",
+    ".github/**/*",
+    "*.md",
+    "**/.vscode/**/*",
+    "devcontainer-vibe.code-workspace"
+  ]
+}
