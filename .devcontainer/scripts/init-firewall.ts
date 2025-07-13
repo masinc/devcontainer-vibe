@@ -98,6 +98,9 @@ try {
     // DeepWiki
     "mcp.deepwiki.com",
     "deepwiki.com",
+    // Nix
+    "cache.nixos.org",
+    "nix-community.cachix.org",
   ];
 
   for (const domain of allowedDomains) {

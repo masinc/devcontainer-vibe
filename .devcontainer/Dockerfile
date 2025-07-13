@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
+FROM mcr.microsoft.com/devcontainers/base:jammy
 
 ARG TZ
 ENV TZ=${TZ:-UTC}
@@ -15,8 +15,6 @@ RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
         fish \
         curl \
         git \
-        jq \
-        fzf \
         libssl-dev \
         make \
         pkg-config \
@@ -33,111 +31,117 @@ RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
         gnupg \
         lsb-release \
         sudo;
-
-    mkdir -p /etc/fish/ /etc/fish/completions/
+    
+    mkdir -p /etc/fish/ /etc/fish/completions/;
+    mkdir -p /nix && chown -R vscode:vscode /nix
 EOS
+
 
 # Install Mise CLI
 RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
     --mount=target=/var/cache/apt,type=cache,sharing=locked \
     <<-EOS
-
     set -eux;
     install -dm 755 /etc/apt/keyrings &&
     wget -qO - https://mise.jdx.dev/gpg-key.pub | gpg --dearmor | tee /etc/apt/keyrings/mise-archive-keyring.gpg 1> /dev/null &&
-    echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.gpg arch=amd64] https://mise.jdx.dev/deb stable main" | tee /etc/apt/sources.list.d/mise.list
-
+    echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.gpg arch=amd64] https://mise.jdx.dev/deb stable main" | tee /etc/apt/sources.list.d/mise.list &&
     apt update &&
-    apt install -y \
-        mise;
+    apt install -y mise
 
-    # Install Deno with mise (for root user)
-    mise use -g deno@2
+    # Install for root user
+    mise use -g deno@2;
 EOS
 
+# Switch to vscode user and install Nix
 USER vscode
-WORKDIR /home/vscode
-
-# Ensure proper ownership of home directory
-USER vscode
-
-# Create user directories
 RUN <<-EOS
     set -eux;
-    mkdir -p \
-        ~/.config/fish/ \
-        ~/.config/fish/completions/
-
-    # Setup mise activation
-    echo 'eval "$(mise activate fish)"' >> ~/.config/fish/config.fish
+    
+    # Install Nix as vscode user in single-user mode
+    curl -L https://nixos.org/nix/install | sh -s -- --no-daemon;
+    
+    # Source the Nix environment
+    . ~/.nix-profile/etc/profile.d/nix.sh;
+    
+    # Create necessary directories
+    mkdir -p ~/.config/home-manager ~/.config/fish/conf.d;
 EOS
 
-# Install all user tools with single mount
-RUN --mount=target=/home/vscode/.cache/mise,type=cache,sharing=locked,uid=1000,gid=1000 <<-EOS
-    set -eux;
-    export MISE_VERBOSE=1;
+# Set environment variables for Nix (vscode user paths)
+ENV PATH="/home/vscode/.nix-profile/bin:${PATH}"
 
-    # Install basic tools
-    mise use -g usage@2;
+# Initialize Home Manager as vscode user with cache for package downloads
+RUN --mount=target=/tmp/nix-download-cache,type=cache,sharing=locked \
+    <<-EOS
+    set -ex;
+    export USER=vscode;
+    
+    # Source Nix environment for vscode user
+    . ~/.nix-profile/etc/profile.d/nix.sh;
+    
+    # Verify nix is available
+    nix --version;
+    
+    # Set up Home Manager channel
+    nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager;
+    nix-channel --update;
+    
+    # Install Home Manager
+    nix-shell '<home-manager>' -A install;
+EOS
 
-    # Setup mise completion
-    mise completion fish > ~/.config/fish/completions/mise.fish;
+# Copy all configurations
+COPY --chown=vscode:vscode config/ /home/vscode/.config/
+RUN --mount=target=/tmp/nix-download-cache,type=cache,sharing=locked \
+    <<-EOS
+    set -ex;
+    export USER=vscode;
+    
+    # Source Nix environment for vscode user
+    . ~/.nix-profile/etc/profile.d/nix.sh;
+    
+    # Apply Home Manager configuration
+    home-manager switch;
+EOS
 
-    # Install development tools
-    mise use -g task@3;
-    mise use -g gh@2;
-
-    # Setup gh completion
-    $(mise which gh) completion -s fish > ~/.config/fish/completions/gh.fish;
-
-    # Install file tools
-    mise use -g ghq@1;
-    mise use -g fd;
-    mise use -g ripgrep;
-    mise use -g ripgrep-all;
-    mise use -g yq;
-    mise use -g yazi;
-    mise use -g bat;        
-
-    mise use -g eza;
-    echo 'abbr -a ls "eza"' >> ~/.config/fish/config.fish;
-    echo 'abbr -a ll "eza --long --group-directories-first"' >> ~/.config/fish/config.fish;
-    echo 'abbr -a la "eza --long --group-directories-first --all"' >> ~/.config/fish/config.fish;
-
-    # Install neovim
-    mise use -g neovim@stable;
-    echo 'abbr -a vim "nvim"' >> ~/.config/fish/config.fish;
-    echo 'abbr -a vi "nvim"' >> ~/.config/fish/config.fish;
-
-    # Install starship
-    mise use -g starship@1;
-
-    echo 'eval "$(starship init fish)"' >> ~/.config/fish/config.fish;
-
-    # TypeScript
+# Install languages with mise
+RUN --mount=target=/home/vscode/.cache/mise,type=cache,sharing=locked,uid=1000,gid=1000 \
+    <<-EOS
+    set -ex;
+    export USER=vscode;
+    
+    # Source Nix and mise environment
+    . ~/.nix-profile/etc/profile.d/nix.sh;
+    
     mise use -g node@24;
-    mise use -g pnpm@10;
     mise use -g deno@2;
-
-    # Python
     mise use -g python@3.12;
     mise use -g pipx@1;
     mise use -g uv@0.7;
+    mise install;
 
-    # VibeCoding
     mise use -g npm:@anthropic-ai/claude-code;
-    mise use -g npm:@google/gemini-cli;
-    :
+    mise use -g npm:@google/gemini-cli
+    mise install;
+
+    # Add pipx to PATH for current session
+    export PATH="$HOME/.local/bin:$PATH";
+    
+    # Verify installations
+    mise list;
 EOS
 
-# Copy scripts
+# Set fish as default shell for vscode user
 USER root
-COPY scripts/ /usr/local/scripts/
 RUN <<-EOS
-    set -eux;
+    usermod -s /usr/bin/fish vscode
+    
+    # Ensure scripts are executable and owned by vscode
     chmod +x /usr/local/scripts/*.ts;
     chown -R vscode:vscode /home/vscode;
 EOS
+
+COPY scripts/ /usr/local/scripts/
 
 USER vscode
 CMD ["/usr/bin/fish"]
