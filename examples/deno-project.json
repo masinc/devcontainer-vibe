@@ -1,0 +1,60 @@
+{
+  "name": "deno-development",
+  "description": "Deno development environment with essential tools",
+  "components": [
+    {
+      "component": "apt.install",
+      "params": {
+        "packages": ["git", "curl", "ripgrep", "fd-find", "iptables"]
+      }
+    },
+    "mise.setup",
+    {
+      "component": "mise.install",
+      "params": {
+        "packages": [
+          "deno@latest",
+          "node@lts"
+        ]
+      }
+    },
+    "nix.setup",
+    {
+      "component": "nix.install",
+      "params": {
+        "packages": [
+          "starship",
+          "fish"
+        ]
+      }
+    },
+    "firewall.setup",
+    {
+      "component": "firewall.domains",
+      "params": {
+        "domains": [
+          "github.com",
+          "deno.land",
+          "jsr.io",
+          "registry.npmjs.org"
+        ]
+      }
+    },
+    {
+      "component": "vscode.install",
+      "params": {
+        "extensions": [
+          "denoland.vscode-deno",
+          "esbenp.prettier-vscode",
+          "eamodio.gitlens"
+        ]
+      }
+    },
+    {
+      "component": "shell.setup",
+      "params": {
+        "shell": "fish"
+      }
+    }
+  ]
+}

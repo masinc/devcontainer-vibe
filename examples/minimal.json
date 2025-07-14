@@ -1,0 +1,29 @@
+{
+  "name": "minimal-deno",
+  "description": "Minimal Deno development environment",
+  "components": [
+    {
+      "component": "apt.install",
+      "params": {
+        "packages": ["git", "curl"]
+      }
+    },
+    "mise.setup",
+    {
+      "component": "mise.install",
+      "params": {
+        "packages": [
+          "deno@latest"
+        ]
+      }
+    },
+    {
+      "component": "vscode.install",
+      "params": {
+        "extensions": [
+          "denoland.vscode-deno"
+        ]
+      }
+    }
+  ]
+}
