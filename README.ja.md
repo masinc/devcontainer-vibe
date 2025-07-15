@@ -58,7 +58,7 @@ deno task test
 - `apt.install` - システムパッケージ
 - `mise.setup` / `mise.install` - ランタイム管理
 - `nix.setup` / `nix.install` - Nixパッケージ
-- `firewall.setup` / `firewall.domains` - セキュリティ
+- `firewall.setup` / `firewall.domain` - セキュリティ
 - `vscode.install` - VS Code拡張機能
 - `shell.setup` - シェル設定
 

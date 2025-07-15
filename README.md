@@ -58,7 +58,7 @@ deno task test
 - `apt.install` - System packages
 - `mise.setup` / `mise.install` - Runtime management
 - `nix.setup` / `nix.install` - Nix packages
-- `firewall.setup` / `firewall.domains` - Security
+- `firewall.setup` / `firewall.domain` - Security
 - `vscode.install` - VS Code extensions
 - `shell.setup` - Shell configuration
 

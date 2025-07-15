@@ -93,7 +93,7 @@ Deno.test("DevcontainerGenerator - full config", async () => {
       join(scriptsDir, "firewall-setup.sh"),
     );
     const firewallDomains = await Deno.readTextFile(
-      join(scriptsDir, "firewall-domains.sh"),
+      join(scriptsDir, "firewall-domain.sh"),
     );
 
     assertEquals(firewallSetup.includes("iptables -P INPUT DROP"), true);

@@ -30,13 +30,15 @@
     },
     "firewall.setup",
     {
-      "name": "firewall.domains",
+      "name": "firewall.domain",
       "params": {
-        "domains": [
-          "github.com",
-          "deno.land",
-          "jsr.io",
-          "registry.npmjs.org"
+        "presets": [
+          "github",
+          "deno",
+          "npm"
+        ],
+        "allows": [
+          "starship.rs"
         ]
       }
     },

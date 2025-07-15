@@ -1,5 +1,39 @@
 import { z } from "zod";
 
+// ファイアウォールプリセット定義
+export const FIREWALL_PRESETS = {
+  github: [
+    "github.com",
+    "api.github.com",
+    "raw.githubusercontent.com",
+    "objects.githubusercontent.com"
+  ],
+  vscode: [
+    "marketplace.visualstudio.com",
+    "vscode.dev",
+    "code.visualstudio.com",
+    "open-vsx.org"
+  ],
+  npm: [
+    "registry.npmjs.org",
+    "npm.pkg.github.com"
+  ],
+  claude: [
+    "claude.ai",
+    "api.anthropic.com"
+  ],
+  deno: [
+    "deno.land",
+    "jsr.io"
+  ],
+  python: [
+    "pypi.org",
+    "files.pythonhosted.org"
+  ]
+} as const;
+
+export type FirewallPreset = keyof typeof FIREWALL_PRESETS;
+
 // 基本的なコンポーネント定義
 export const ComponentSchema = z.discriminatedUnion("name", [
   // APT パッケージインストール
@@ -41,12 +75,16 @@ export const ComponentSchema = z.discriminatedUnion("name", [
     name: z.literal("firewall.setup"),
   }),
 
-  // ファイアウォール ドメイン設定
+  // ファイアウォール ドメイン設定（統合版）
   z.object({
-    name: z.literal("firewall.domains"),
+    name: z.literal("firewall.domain"),
     params: z.object({
-      domains: z.array(z.string()),
-    }),
+      presets: z.array(z.string()).optional(),
+      allows: z.array(z.string()).optional(),
+    }).refine(
+      (data) => data.presets || data.allows,
+      { message: "Either presets or allows must be provided" }
+    ),
   }),
 
   // VS Code 拡張機能インストール

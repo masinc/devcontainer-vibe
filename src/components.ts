@@ -1,4 +1,5 @@
 import type { Component, SimpleComponent } from "./types.ts";
+import { FIREWALL_PRESETS } from "./types.ts";
 
 // コンポーネントの処理結果
 export interface ComponentResult {
@@ -135,24 +136,44 @@ iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
   }
 }
 
-// ファイアウォール ドメイン設定
-export class FirewallDomainsHandler extends BaseComponentHandler {
+// ファイアウォール ドメイン設定（統合版）
+export class FirewallDomainHandler extends BaseComponentHandler {
   handle(component: Component | SimpleComponent): ComponentResult {
     if (typeof component === "string") {
-      throw new Error("firewall.domains requires parameters");
+      throw new Error("firewall.domain requires parameters");
     }
 
-    if (component.name !== "firewall.domains") {
+    if (component.name !== "firewall.domain") {
       throw new Error("Invalid component type");
     }
 
-    const domains = component.params.domains;
-    const allowRules = domains.map((domain) =>
+    let allDomains: string[] = [];
+    
+    // プリセットからドメインを取得
+    if (component.params.presets) {
+      for (const preset of component.params.presets) {
+        if (preset in FIREWALL_PRESETS) {
+          allDomains.push(...FIREWALL_PRESETS[preset as keyof typeof FIREWALL_PRESETS]);
+        } else {
+          throw new Error(`Unknown firewall preset: ${preset}`);
+        }
+      }
+    }
+    
+    // 個別ドメインを追加
+    if (component.params.allows) {
+      allDomains.push(...component.params.allows);
+    }
+    
+    // 重複を削除
+    const uniqueDomains = [...new Set(allDomains)];
+    
+    const allowRules = uniqueDomains.map((domain) =>
       `iptables -A OUTPUT -d ${domain} -j ACCEPT`
     ).join("\n");
 
     const scripts = {
-      "firewall-domains.sh": `#!/bin/bash
+      "firewall-domain.sh": `#!/bin/bash
 # Allow specific domains
 ${allowRules}
 `,
@@ -215,7 +236,7 @@ export class ComponentHandlerFactory {
     ["nix.setup", new NixSetupHandler()],
     ["nix.install", new NixInstallHandler()],
     ["firewall.setup", new FirewallSetupHandler()],
-    ["firewall.domains", new FirewallDomainsHandler()],
+    ["firewall.domain", new FirewallDomainHandler()],
     ["vscode.install", new VscodeInstallHandler()],
     ["shell.setup", new ShellSetupHandler()],
   ]);
