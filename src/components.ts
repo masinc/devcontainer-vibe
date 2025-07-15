@@ -86,8 +86,22 @@ export class MiseInstallHandler extends BaseComponentHandler {
 export class NixSetupHandler extends BaseComponentHandler {
   handle(_component: Component | SimpleComponent): ComponentResult {
     const dockerfileLines = [
-      "RUN curl -L https://nixos.org/nix/install | sh -s -- --daemon",
-      'ENV PATH="/nix/var/nix/profiles/default/bin:$PATH"',
+      "# Create nix directory and set ownership",
+      "USER root",
+      "RUN mkdir -p /nix && chown -R vscode:vscode /nix",
+      "",
+      "# Install Nix as vscode user in single-user mode",
+      "USER vscode",
+      "RUN curl -L https://nixos.org/nix/install | sh -s -- --no-daemon",
+      "",
+      "# Set environment variables for Nix (vscode user paths)",
+      'ENV PATH="/home/vscode/.nix-profile/bin:$PATH"',
+      "",
+      "# Source Nix environment and verify installation",
+      "RUN . ~/.nix-profile/etc/profile.d/nix.sh && nix --version",
+      "",
+      "# Switch back to root for subsequent operations",
+      "USER root",
     ];
 
     return this.createResult(dockerfileLines);
@@ -105,9 +119,14 @@ export class NixInstallHandler extends BaseComponentHandler {
       throw new Error("Invalid component type");
     }
 
-    const packages = component.params.packages.join(" ");
+    const packages = component.params.packages;
+    const nixPackages = packages.map(pkg => `nixpkgs.${pkg}`).join(" ");
     const dockerfileLines = [
-      `RUN nix-env -iA nixpkgs.${packages.replace(/ /g, " nixpkgs.")}`,
+      "# Install Nix packages as vscode user",
+      "USER vscode",
+      "RUN . ~/.nix-profile/etc/profile.d/nix.sh && \\",
+      `    nix-env -iA ${nixPackages}`,
+      "USER root",
     ];
 
     return this.createResult(dockerfileLines);
@@ -222,6 +241,8 @@ export class ShellSetupHandler extends BaseComponentHandler {
 
     const shell = component.params.shell;
     const dockerfileLines = [
+      "# Set default shell for vscode user",
+      "USER root",
       `RUN chsh -s /bin/${shell} vscode`,
     ];
 

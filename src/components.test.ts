@@ -89,14 +89,20 @@ Deno.test("NixSetupHandler - valid component", () => {
   const handler = new NixSetupHandler();
   const result = handler.handle("nix.setup");
 
-  assertEquals(result.dockerfileLines.length, 2);
+  assertEquals(result.dockerfileLines.length, 16);
   assertEquals(
     result.dockerfileLines[0],
-    "RUN curl -L https://nixos.org/nix/install | sh -s -- --daemon",
+    "# Create nix directory and set ownership",
   );
+  assertEquals(result.dockerfileLines[1], "USER root");
   assertEquals(
-    result.dockerfileLines[1],
-    'ENV PATH="/nix/var/nix/profiles/default/bin:$PATH"',
+    result.dockerfileLines[2],
+    "RUN mkdir -p /nix && chown -R vscode:vscode /nix",
+  );
+  assertEquals(result.dockerfileLines[5], "USER vscode");
+  assertEquals(
+    result.dockerfileLines[6],
+    "RUN curl -L https://nixos.org/nix/install | sh -s -- --no-daemon",
   );
 });
 
@@ -111,11 +117,18 @@ Deno.test("NixInstallHandler - valid component", () => {
 
   const result = handler.handle(component);
 
-  assertEquals(result.dockerfileLines.length, 1);
+  assertEquals(result.dockerfileLines.length, 5);
+  assertEquals(result.dockerfileLines[0], "# Install Nix packages as vscode user");
+  assertEquals(result.dockerfileLines[1], "USER vscode");
   assertEquals(
-    result.dockerfileLines[0],
-    "RUN nix-env -iA nixpkgs.starship nixpkgs.fish",
+    result.dockerfileLines[2],
+    "RUN . ~/.nix-profile/etc/profile.d/nix.sh && \\",
   );
+  assertEquals(
+    result.dockerfileLines[3],
+    "    nix-env -iA nixpkgs.starship nixpkgs.fish",
+  );
+  assertEquals(result.dockerfileLines[4], "USER root");
 });
 
 Deno.test("FirewallSetupHandler - valid component", () => {
@@ -271,8 +284,10 @@ Deno.test("ShellSetupHandler - valid component", () => {
 
   const result = handler.handle(component);
 
-  assertEquals(result.dockerfileLines.length, 1);
-  assertEquals(result.dockerfileLines[0], "RUN chsh -s /bin/fish vscode");
+  assertEquals(result.dockerfileLines.length, 3);
+  assertEquals(result.dockerfileLines[0], "# Set default shell for vscode user");
+  assertEquals(result.dockerfileLines[1], "USER root");
+  assertEquals(result.dockerfileLines[2], "RUN chsh -s /bin/fish vscode");
 });
 
 Deno.test("ComponentHandlerFactory - get all handlers", () => {
