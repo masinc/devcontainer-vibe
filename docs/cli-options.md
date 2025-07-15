@@ -1,6 +1,7 @@
 # CLI Options Documentation
 
-This document provides detailed information about all command-line options available in the Devcontainer Generator.
+This document provides detailed information about all command-line options
+available in the Devcontainer Generator.
 
 ## Table of Contents
 
@@ -14,7 +15,8 @@ This document provides detailed information about all command-line options avail
 
 ## Overview
 
-The Devcontainer Generator provides a simple command-line interface with three main options:
+The Devcontainer Generator provides a simple command-line interface with three
+main options:
 
 ```bash
 deno run --allow-read --allow-write src/main.ts [options]
@@ -24,18 +26,21 @@ deno run --allow-read --allow-write src/main.ts [options]
 
 ### `--config` / `-c`
 
-**Type:** `string`  
-**Default:** `devcontainer-config.json`  
+**Type:** `string`\
+**Default:** `devcontainer-config.json`\
 **Required:** No
 
-Specifies the path to the configuration file that defines the devcontainer environment.
+Specifies the path to the configuration file that defines the devcontainer
+environment.
 
 #### Behavior
 
 - **Relative paths**: Resolved relative to the current working directory
 - **Absolute paths**: Used as-is
-- **Default behavior**: If not specified, looks for `devcontainer-config.json` in the current directory
-- **File validation**: The file must exist and be readable, or the command will fail
+- **Default behavior**: If not specified, looks for `devcontainer-config.json`
+  in the current directory
+- **File validation**: The file must exist and be readable, or the command will
+  fail
 
 #### Examples
 
@@ -58,6 +63,7 @@ deno task generate -c examples/minimal.json
 #### Error Conditions
 
 The command will fail if:
+
 - The specified file doesn't exist
 - The file is not readable (permission issues)
 - The file is not valid JSON
@@ -79,16 +85,18 @@ $ deno task generate --config invalid-schema.json
 
 ### `--output` / `-o`
 
-**Type:** `string`  
-**Default:** `.devcontainer`  
+**Type:** `string`\
+**Default:** `.devcontainer`\
 **Required:** No
 
-Specifies the output directory where the generated devcontainer files will be created.
+Specifies the output directory where the generated devcontainer files will be
+created.
 
 #### Behavior
 
 - **Directory creation**: Creates the directory if it doesn't exist
-- **Existence check**: Throws an error if the directory already exists (safety feature)
+- **Existence check**: Throws an error if the directory already exists (safety
+  feature)
 - **Relative paths**: Resolved relative to the current working directory
 - **Absolute paths**: Used as-is
 - **Permissions**: Requires write permissions in the parent directory
@@ -146,8 +154,8 @@ output-directory/
 
 ### `--help` / `-h`
 
-**Type:** `boolean`  
-**Default:** `false`  
+**Type:** `boolean`\
+**Default:** `false`\
 **Required:** No
 
 Shows help information and exits.
@@ -232,7 +240,8 @@ deno task generate --config team-configs/shared.json --output .devcontainer-$(wh
 The generator follows this priority order for configuration files:
 
 1. **Command-line argument**: `--config` option takes highest priority
-2. **Current directory**: `devcontainer-config.json` in the current working directory
+2. **Current directory**: `devcontainer-config.json` in the current working
+   directory
 3. **Error**: If no configuration is found, the command fails
 
 ### Search Paths
@@ -246,6 +255,7 @@ The generator follows this priority order for configuration files:
 ### Configuration File Naming
 
 Supported configuration file extensions:
+
 - `.json` (preferred)
 - Any extension is supported as long as the content is valid JSON
 
@@ -254,7 +264,8 @@ Supported configuration file extensions:
 ### Creation Process
 
 1. **Check existence**: Verify the output directory doesn't exist
-2. **Create directory**: Create the output directory and any necessary parent directories
+2. **Create directory**: Create the output directory and any necessary parent
+   directories
 3. **Generate files**: Create Dockerfile, devcontainer.json, and scripts
 4. **Set permissions**: Ensure script files are executable (chmod +x)
 
@@ -341,7 +352,8 @@ $ deno task generate --output new-container
 
 ## Environment Variables
 
-The generator doesn't currently use environment variables, but respects standard system environment variables:
+The generator doesn't currently use environment variables, but respects standard
+system environment variables:
 
 ### System Variables
 
@@ -395,4 +407,5 @@ fi
 echo "Devcontainer generated successfully"
 ```
 
-For more information, see the main README.md and the configuration format documentation.
+For more information, see the main README.md and the configuration format
+documentation.

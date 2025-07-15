@@ -6,7 +6,7 @@
     "jsr:@std/internal@^1.0.6": "1.0.9",
     "jsr:@std/internal@^1.0.9": "1.0.9",
     "jsr:@std/path@^1.1.1": "1.1.1",
-    "npm:@types/node@^24.0.13": "24.0.13",
+    "npm:@types/node@^24.0.14": "24.0.14",
     "npm:zod@^4.0.5": "4.0.5"
   },
   "jsr": {
@@ -34,8 +34,8 @@
     }
   },
   "npm": {
-    "@types/node@24.0.13": {
-      "integrity": "sha512-Qm9OYVOFHFYg3wJoTSrz80hoec5Lia/dPp84do3X7dZvLikQvM1YpmvTBEdIr/e+U8HTkFjLHLnl78K/qjf+jQ==",
+    "@types/node@24.0.14": {
+      "integrity": "sha512-4zXMWD91vBLGRtHK3YbIoFMia+1nqEz72coM42C5ETjnNCa/heoj7NT1G67iAfOqMmcfhuCZ4uNpyz8EjlAejw==",
       "dependencies": [
         "undici-types"
       ]
@@ -52,7 +52,7 @@
       "jsr:@std/assert@1",
       "jsr:@std/fs@^1.0.19",
       "jsr:@std/path@^1.1.1",
-      "npm:@types/node@^24.0.13",
+      "npm:@types/node@^24.0.14",
       "npm:zod@^4.0.5"
     ]
   }

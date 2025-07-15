@@ -6,30 +6,30 @@ export const FIREWALL_PRESETS = {
     "github.com",
     "api.github.com",
     "raw.githubusercontent.com",
-    "objects.githubusercontent.com"
+    "objects.githubusercontent.com",
   ],
   vscode: [
     "marketplace.visualstudio.com",
     "vscode.dev",
     "code.visualstudio.com",
-    "open-vsx.org"
+    "open-vsx.org",
   ],
   npm: [
     "registry.npmjs.org",
-    "npm.pkg.github.com"
+    "npm.pkg.github.com",
   ],
   claude: [
     "claude.ai",
-    "api.anthropic.com"
+    "api.anthropic.com",
   ],
   deno: [
     "deno.land",
-    "jsr.io"
+    "jsr.io",
   ],
   python: [
     "pypi.org",
-    "files.pythonhosted.org"
-  ]
+    "files.pythonhosted.org",
+  ],
 } as const;
 
 export type FirewallPreset = keyof typeof FIREWALL_PRESETS;
@@ -83,7 +83,7 @@ export const ComponentSchema = z.discriminatedUnion("name", [
       allows: z.array(z.string()).optional(),
     }).refine(
       (data) => data.presets || data.allows,
-      { message: "Either presets or allows must be provided" }
+      { message: "Either presets or allows must be provided" },
     ),
   }),
 

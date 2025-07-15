@@ -1,13 +1,17 @@
 # Devcontainer Generator
 
-A Deno-based tool for generating customized devcontainer environments from declarative configuration files.
+A Deno-based tool for generating customized devcontainer environments from
+declarative configuration files.
 
 ## Features
 
-- 🛠️ **Component-based architecture** - Modular components for different tools and services
+- 🛠️ **Component-based architecture** - Modular components for different tools
+  and services
 - 📦 **Multiple package managers** - Support for apt, mise, and Nix
-- 🔥 **Firewall configuration** - Built-in firewall setup with domain allowlisting
-- 🎨 **VS Code integration** - Automatic extension installation and configuration
+- 🔥 **Firewall configuration** - Built-in firewall setup with domain
+  allowlisting
+- 🎨 **VS Code integration** - Automatic extension installation and
+  configuration
 - 🐚 **Shell customization** - Support for bash, fish, and zsh
 - ✅ **Type-safe configuration** - Zod v4 schema validation
 - 🧪 **Comprehensive testing** - Full test coverage with examples
@@ -64,8 +68,10 @@ deno task test
 
 ## Documentation
 
-- **[Configuration Format](docs/config-format.md)** - Complete guide to configuration file format
-- **[CLI Options](docs/cli-options.md)** - Detailed command-line options documentation
+- **[Configuration Format](docs/config-format.md)** - Complete guide to
+  configuration file format
+- **[CLI Options](docs/cli-options.md)** - Detailed command-line options
+  documentation
 - **[日本語ドキュメント](README.ja.md)** - Japanese documentation
 
 ## Development

@@ -1,6 +1,7 @@
 # Configuration Format Documentation
 
-This document provides a comprehensive guide to the configuration format used by the Devcontainer Generator.
+This document provides a comprehensive guide to the configuration format used by
+the Devcontainer Generator.
 
 ## Table of Contents
 
@@ -14,7 +15,8 @@ This document provides a comprehensive guide to the configuration format used by
 
 ## Basic Structure
 
-The configuration file is a JSON document that defines the structure and components of your devcontainer environment. Here's the basic structure:
+The configuration file is a JSON document that defines the structure and
+components of your devcontainer environment. Here's the basic structure:
 
 ```json
 {
@@ -28,19 +30,22 @@ The configuration file is a JSON document that defines the structure and compone
 
 ### Root Properties
 
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `name` | `string` | ✅ | The name of the devcontainer environment |
-| `description` | `string` | ❌ | Optional description of the environment |
-| `components` | `array` | ✅ | Array of components to install/configure |
+| Property      | Type     | Required | Description                              |
+| ------------- | -------- | -------- | ---------------------------------------- |
+| `name`        | `string` | ✅       | The name of the devcontainer environment |
+| `description` | `string` | ❌       | Optional description of the environment  |
+| `components`  | `array`  | ✅       | Array of components to install/configure |
 
 ## Configuration Schema
 
-The configuration is validated using Zod v4 schema validation. The schema ensures type safety and provides helpful error messages for invalid configurations.
+The configuration is validated using Zod v4 schema validation. The schema
+ensures type safety and provides helpful error messages for invalid
+configurations.
 
 ### Component Schema
 
 Components can be either:
+
 1. **Simple components** (string) - Components with no parameters
 2. **Complex components** (object) - Components with parameters
 
@@ -62,6 +67,7 @@ Components can be either:
 ### 1. System Package Installation
 
 #### `apt.install`
+
 Installs system packages using the APT package manager.
 
 ```json
@@ -74,9 +80,11 @@ Installs system packages using the APT package manager.
 ```
 
 **Parameters:**
+
 - `packages` (array of strings): List of APT package names to install
 
 **Generated Docker Commands:**
+
 ```dockerfile
 RUN apt-get update && apt-get install -y \
     git curl ripgrep fd-find iptables \
@@ -86,6 +94,7 @@ RUN apt-get update && apt-get install -y \
 ### 2. Runtime Management (mise)
 
 #### `mise.setup`
+
 Installs the mise runtime version manager.
 
 ```json
@@ -95,12 +104,14 @@ Installs the mise runtime version manager.
 **Parameters:** None
 
 **Generated Docker Commands:**
+
 ```dockerfile
 RUN curl https://mise.run | sh
 ENV PATH="/root/.local/bin:$PATH"
 ```
 
 #### `mise.install`
+
 Installs language runtimes using mise.
 
 ```json
@@ -113,9 +124,12 @@ Installs language runtimes using mise.
 ```
 
 **Parameters:**
-- `packages` (array of strings): List of runtime specifications in format `tool@version`
+
+- `packages` (array of strings): List of runtime specifications in format
+  `tool@version`
 
 **Generated Docker Commands:**
+
 ```dockerfile
 RUN mise use -g deno@latest
 RUN mise use -g node@lts
@@ -125,6 +139,7 @@ RUN mise use -g python@3.12
 ### 3. Package Management (Nix)
 
 #### `nix.setup`
+
 Installs the Nix package manager.
 
 ```json
@@ -134,12 +149,14 @@ Installs the Nix package manager.
 **Parameters:** None
 
 **Generated Docker Commands:**
+
 ```dockerfile
 RUN curl -L https://nixos.org/nix/install | sh -s -- --daemon
 ENV PATH="/nix/var/nix/profiles/default/bin:$PATH"
 ```
 
 #### `nix.install`
+
 Installs packages using Nix.
 
 ```json
@@ -152,9 +169,11 @@ Installs packages using Nix.
 ```
 
 **Parameters:**
+
 - `packages` (array of strings): List of Nix package names
 
 **Generated Docker Commands:**
+
 ```dockerfile
 RUN nix-env -iA nixpkgs.starship nixpkgs.fish nixpkgs.ripgrep
 ```
@@ -162,6 +181,7 @@ RUN nix-env -iA nixpkgs.starship nixpkgs.fish nixpkgs.ripgrep
 ### 4. Firewall Configuration
 
 #### `firewall.setup`
+
 Sets up basic firewall rules.
 
 ```json
@@ -171,9 +191,11 @@ Sets up basic firewall rules.
 **Parameters:** None
 
 **Generated Files:**
+
 - `scripts/firewall-setup.sh`: Basic iptables configuration script
 
 #### `firewall.domains`
+
 Configures firewall to allow specific domains.
 
 ```json
@@ -186,14 +208,17 @@ Configures firewall to allow specific domains.
 ```
 
 **Parameters:**
+
 - `domains` (array of strings): List of domain names to allow
 
 **Generated Files:**
+
 - `scripts/firewall-domains.sh`: Domain-specific firewall rules
 
 ### 5. VS Code Extensions
 
 #### `vscode.install`
+
 Installs VS Code extensions in the devcontainer.
 
 ```json
@@ -210,9 +235,11 @@ Installs VS Code extensions in the devcontainer.
 ```
 
 **Parameters:**
+
 - `extensions` (array of strings): List of VS Code extension IDs
 
 **Generated Configuration:**
+
 ```json
 {
   "customizations": {
@@ -226,6 +253,7 @@ Installs VS Code extensions in the devcontainer.
 ### 6. Shell Configuration
 
 #### `shell.setup`
+
 Sets the default shell for the vscode user.
 
 ```json
@@ -238,9 +266,11 @@ Sets the default shell for the vscode user.
 ```
 
 **Parameters:**
+
 - `shell` (enum): One of `"bash"`, `"fish"`, or `"zsh"`
 
 **Generated Docker Commands:**
+
 ```dockerfile
 RUN chsh -s /bin/fish vscode
 ```
@@ -249,24 +279,25 @@ RUN chsh -s /bin/fish vscode
 
 ### Component Order
 
-Components are processed in the order they appear in the configuration. This is important for dependencies:
+Components are processed in the order they appear in the configuration. This is
+important for dependencies:
 
 ```json
 {
   "components": [
-    "mise.setup",           // Install mise first
+    "mise.setup", // Install mise first
     {
       "component": "mise.install",
       "params": {
         "packages": ["deno@latest"]
       }
-    },                      // Then install runtimes
+    }, // Then install runtimes
     {
       "component": "shell.setup",
       "params": {
         "shell": "fish"
       }
-    }                       // Finally configure shell
+    } // Finally configure shell
   ]
 }
 ```
@@ -320,6 +351,7 @@ deno task generate --config configs/testing.json
 ## Best Practices
 
 ### 1. Logical Grouping
+
 Group related components together:
 
 ```json
@@ -332,7 +364,7 @@ Group related components together:
         "packages": ["git", "curl", "build-essential"]
       }
     },
-    
+
     // Runtime management
     "mise.setup",
     {
@@ -341,7 +373,7 @@ Group related components together:
         "packages": ["deno@latest", "node@lts"]
       }
     },
-    
+
     // Development tools
     "nix.setup",
     {
@@ -350,7 +382,7 @@ Group related components together:
         "packages": ["starship", "fish"]
       }
     },
-    
+
     // Security configuration
     "firewall.setup",
     {
@@ -359,7 +391,7 @@ Group related components together:
         "domains": ["github.com", "deno.land"]
       }
     },
-    
+
     // IDE configuration
     {
       "component": "vscode.install",
@@ -367,7 +399,7 @@ Group related components together:
         "extensions": ["denoland.vscode-deno"]
       }
     },
-    
+
     // Shell configuration last
     {
       "component": "shell.setup",
@@ -380,6 +412,7 @@ Group related components together:
 ```
 
 ### 2. Minimal Dependencies
+
 Only include packages and tools you actually need:
 
 ```json
@@ -418,6 +451,7 @@ Only include packages and tools you actually need:
 ```
 
 ### 3. Version Pinning
+
 Use specific versions for reproducible builds:
 
 ```json
@@ -425,15 +459,16 @@ Use specific versions for reproducible builds:
   "component": "mise.install",
   "params": {
     "packages": [
-      "deno@1.45.5",        // Specific version
-      "node@20.15.0",       // Specific version
-      "python@3.12.0"       // Specific version
+      "deno@1.45.5", // Specific version
+      "node@20.15.0", // Specific version
+      "python@3.12.0" // Specific version
     ]
   }
 }
 ```
 
 ### 4. Descriptive Names
+
 Use clear, descriptive names for your configurations:
 
 ```json
@@ -448,36 +483,40 @@ Use clear, descriptive names for your configurations:
 The configuration is validated using Zod schemas. Common validation errors:
 
 ### Invalid Component Type
+
 ```json
 {
-  "component": "invalid.component",  // ❌ Unknown component
+  "component": "invalid.component", // ❌ Unknown component
   "params": {}
 }
 ```
 
 ### Missing Required Parameters
+
 ```json
 {
-  "component": "apt.install"  // ❌ Missing required 'params'
+  "component": "apt.install" // ❌ Missing required 'params'
 }
 ```
 
 ### Invalid Parameter Types
+
 ```json
 {
   "component": "apt.install",
   "params": {
-    "packages": "git"  // ❌ Should be array, not string
+    "packages": "git" // ❌ Should be array, not string
   }
 }
 ```
 
 ### Invalid Shell Option
+
 ```json
 {
   "component": "shell.setup",
   "params": {
-    "shell": "powershell"  // ❌ Must be 'bash', 'fish', or 'zsh'
+    "shell": "powershell" // ❌ Must be 'bash', 'fish', or 'zsh'
   }
 }
 ```
@@ -485,6 +524,7 @@ The configuration is validated using Zod schemas. Common validation errors:
 ## Examples
 
 ### Minimal Deno Development
+
 ```json
 {
   "name": "minimal-deno",
@@ -514,6 +554,7 @@ The configuration is validated using Zod schemas. Common validation errors:
 ```
 
 ### Full-Stack Development
+
 ```json
 {
   "name": "fullstack-development",
@@ -574,6 +615,7 @@ The configuration is validated using Zod schemas. Common validation errors:
 ```
 
 ### Security-Focused Environment
+
 ```json
 {
   "name": "secure-development",

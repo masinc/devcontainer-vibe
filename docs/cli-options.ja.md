@@ -1,6 +1,7 @@
 # CLIオプション ドキュメント
 
-このドキュメントは、Devcontainer Generatorで利用可能なすべてのコマンドラインオプションについて詳細な情報を提供します。
+このドキュメントは、Devcontainer
+Generatorで利用可能なすべてのコマンドラインオプションについて詳細な情報を提供します。
 
 ## 目次
 
@@ -14,7 +15,8 @@
 
 ## 概要
 
-Devcontainer Generatorは、3つの主要オプションを持つシンプルなコマンドラインインターフェースを提供します：
+Devcontainer
+Generatorは、3つの主要オプションを持つシンプルなコマンドラインインターフェースを提供します：
 
 ```bash
 deno run --allow-read --allow-write src/main.ts [options]
@@ -24,8 +26,8 @@ deno run --allow-read --allow-write src/main.ts [options]
 
 ### `--config` / `-c`
 
-**型:** `string`  
-**デフォルト:** `devcontainer-config.json`  
+**型:** `string`\
+**デフォルト:** `devcontainer-config.json`\
 **必須:** いいえ
 
 devcontainer環境を定義する設定ファイルのパスを指定します。
@@ -34,8 +36,10 @@ devcontainer環境を定義する設定ファイルのパスを指定します�
 
 - **相対パス**: 現在の作業ディレクトリを基準として解決
 - **絶対パス**: そのまま使用
-- **デフォルト動作**: 指定されていない場合、現在のディレクトリの`devcontainer-config.json`を探す
-- **ファイル検証**: ファイルが存在し読み取り可能である必要があり、そうでなければコマンドは失敗
+- **デフォルト動作**:
+  指定されていない場合、現在のディレクトリの`devcontainer-config.json`を探す
+- **ファイル検証**:
+  ファイルが存在し読み取り可能である必要があり、そうでなければコマンドは失敗
 
 #### 例
 
@@ -58,6 +62,7 @@ deno task generate -c examples/minimal.json
 #### エラー条件
 
 以下の場合にコマンドが失敗します：
+
 - 指定されたファイルが存在しない
 - ファイルが読み取り不可能（権限の問題）
 - ファイルが有効なJSONでない
@@ -79,8 +84,8 @@ $ deno task generate --config invalid-schema.json
 
 ### `--output` / `-o`
 
-**型:** `string`  
-**デフォルト:** `.devcontainer`  
+**型:** `string`\
+**デフォルト:** `.devcontainer`\
 **必須:** いいえ
 
 生成されたdevcontainerファイルが作成される出力ディレクトリを指定します。
@@ -146,8 +151,8 @@ output-directory/
 
 ### `--help` / `-h`
 
-**型:** `boolean`  
-**デフォルト:** `false`  
+**型:** `boolean`\
+**デフォルト:** `false`\
 **必須:** いいえ
 
 ヘルプ情報を表示して終了します。
@@ -246,6 +251,7 @@ deno task generate --config team-configs/shared.json --output .devcontainer-$(wh
 ### 設定ファイルの命名
 
 サポートされる設定ファイル拡張子：
+
 - `.json`（推奨）
 - 内容が有効なJSONである限り、任意の拡張子をサポート
 

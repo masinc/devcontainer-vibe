@@ -147,27 +147,29 @@ export class FirewallDomainHandler extends BaseComponentHandler {
       throw new Error("Invalid component type");
     }
 
-    let allDomains: string[] = [];
-    
+    const allDomains: string[] = [];
+
     // プリセットからドメインを取得
     if (component.params.presets) {
       for (const preset of component.params.presets) {
         if (preset in FIREWALL_PRESETS) {
-          allDomains.push(...FIREWALL_PRESETS[preset as keyof typeof FIREWALL_PRESETS]);
+          allDomains.push(
+            ...FIREWALL_PRESETS[preset as keyof typeof FIREWALL_PRESETS],
+          );
         } else {
           throw new Error(`Unknown firewall preset: ${preset}`);
         }
       }
     }
-    
+
     // 個別ドメインを追加
     if (component.params.allows) {
       allDomains.push(...component.params.allows);
     }
-    
+
     // 重複を削除
     const uniqueDomains = [...new Set(allDomains)];
-    
+
     const allowRules = uniqueDomains.map((domain) =>
       `iptables -A OUTPUT -d ${domain} -j ACCEPT`
     ).join("\n");
