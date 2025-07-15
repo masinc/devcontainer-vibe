@@ -36,7 +36,7 @@ export class AptInstallHandler extends BaseComponentHandler {
       throw new Error("apt.install requires parameters");
     }
 
-    if (component.component !== "apt.install") {
+    if (component.name !== "apt.install") {
       throw new Error("Invalid component type");
     }
 
@@ -70,7 +70,7 @@ export class MiseInstallHandler extends BaseComponentHandler {
       throw new Error("mise.install requires parameters");
     }
 
-    if (component.component !== "mise.install") {
+    if (component.name !== "mise.install") {
       throw new Error("Invalid component type");
     }
 
@@ -100,7 +100,7 @@ export class NixInstallHandler extends BaseComponentHandler {
       throw new Error("nix.install requires parameters");
     }
 
-    if (component.component !== "nix.install") {
+    if (component.name !== "nix.install") {
       throw new Error("Invalid component type");
     }
 
@@ -142,7 +142,7 @@ export class FirewallDomainsHandler extends BaseComponentHandler {
       throw new Error("firewall.domains requires parameters");
     }
 
-    if (component.component !== "firewall.domains") {
+    if (component.name !== "firewall.domains") {
       throw new Error("Invalid component type");
     }
 
@@ -169,7 +169,7 @@ export class VscodeInstallHandler extends BaseComponentHandler {
       throw new Error("vscode.install requires parameters");
     }
 
-    if (component.component !== "vscode.install") {
+    if (component.name !== "vscode.install") {
       throw new Error("Invalid component type");
     }
 
@@ -193,7 +193,7 @@ export class ShellSetupHandler extends BaseComponentHandler {
       throw new Error("shell.setup requires parameters");
     }
 
-    if (component.component !== "shell.setup") {
+    if (component.name !== "shell.setup") {
       throw new Error("Invalid component type");
     }
 

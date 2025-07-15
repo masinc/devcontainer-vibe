@@ -37,14 +37,14 @@ deno task test
   "description": "My development environment",
   "components": [
     {
-      "component": "apt.install",
+      "name": "apt.install",
       "params": {
         "packages": ["git", "curl", "ripgrep"]
       }
     },
     "mise.setup",
     {
-      "component": "mise.install",
+      "name": "mise.install",
       "params": {
         "packages": ["deno@latest", "node@lts"]
       }

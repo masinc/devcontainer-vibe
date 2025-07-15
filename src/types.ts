@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 // 基本的なコンポーネント定義
-export const ComponentSchema = z.discriminatedUnion("component", [
+export const ComponentSchema = z.discriminatedUnion("name", [
   // APT パッケージインストール
   z.object({
-    component: z.literal("apt.install"),
+    name: z.literal("apt.install"),
     params: z.object({
       packages: z.array(z.string()),
     }),
@@ -12,12 +12,12 @@ export const ComponentSchema = z.discriminatedUnion("component", [
 
   // mise セットアップ
   z.object({
-    component: z.literal("mise.setup"),
+    name: z.literal("mise.setup"),
   }),
 
   // mise パッケージインストール
   z.object({
-    component: z.literal("mise.install"),
+    name: z.literal("mise.install"),
     params: z.object({
       packages: z.array(z.string()),
     }),
@@ -25,12 +25,12 @@ export const ComponentSchema = z.discriminatedUnion("component", [
 
   // Nix セットアップ
   z.object({
-    component: z.literal("nix.setup"),
+    name: z.literal("nix.setup"),
   }),
 
   // Nix パッケージインストール
   z.object({
-    component: z.literal("nix.install"),
+    name: z.literal("nix.install"),
     params: z.object({
       packages: z.array(z.string()),
     }),
@@ -38,12 +38,12 @@ export const ComponentSchema = z.discriminatedUnion("component", [
 
   // ファイアウォール セットアップ
   z.object({
-    component: z.literal("firewall.setup"),
+    name: z.literal("firewall.setup"),
   }),
 
   // ファイアウォール ドメイン設定
   z.object({
-    component: z.literal("firewall.domains"),
+    name: z.literal("firewall.domains"),
     params: z.object({
       domains: z.array(z.string()),
     }),
@@ -51,7 +51,7 @@ export const ComponentSchema = z.discriminatedUnion("component", [
 
   // VS Code 拡張機能インストール
   z.object({
-    component: z.literal("vscode.install"),
+    name: z.literal("vscode.install"),
     params: z.object({
       extensions: z.array(z.string()),
     }),
@@ -59,7 +59,7 @@ export const ComponentSchema = z.discriminatedUnion("component", [
 
   // シェル設定
   z.object({
-    component: z.literal("shell.setup"),
+    name: z.literal("shell.setup"),
     params: z.object({
       shell: z.enum(["bash", "fish", "zsh"]),
     }),
@@ -84,4 +84,4 @@ export type SimpleComponent = z.infer<typeof SimpleComponentSchema>;
 export type DevcontainerConfig = z.infer<typeof DevcontainerConfigSchema>;
 
 // コンポーネントの種類
-export type ComponentType = Component["component"] | SimpleComponent;
+export type ComponentType = Component["name"] | SimpleComponent;
