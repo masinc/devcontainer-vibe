@@ -64,16 +64,18 @@ async function main(): Promise<void> {
     }
 
     const generator = new DevcontainerGenerator();
-    
+
     console.log(`Generating devcontainer from: ${args.config}`);
     console.log(`Output directory: ${args.output}`);
-    
+
     await generator.generate(args.config!, args.output!);
-    
+
     console.log("✅ Devcontainer generated successfully!");
-    
   } catch (error) {
-    console.error("❌ Error:", error.message);
+    console.error(
+      "❌ Error:",
+      error instanceof Error ? error.message : String(error),
+    );
     Deno.exit(1);
   }
 }

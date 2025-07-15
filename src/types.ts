@@ -9,12 +9,12 @@ export const ComponentSchema = z.discriminatedUnion("component", [
       packages: z.array(z.string()),
     }),
   }),
-  
+
   // mise セットアップ
   z.object({
     component: z.literal("mise.setup"),
   }),
-  
+
   // mise パッケージインストール
   z.object({
     component: z.literal("mise.install"),
@@ -22,12 +22,12 @@ export const ComponentSchema = z.discriminatedUnion("component", [
       packages: z.array(z.string()),
     }),
   }),
-  
+
   // Nix セットアップ
   z.object({
     component: z.literal("nix.setup"),
   }),
-  
+
   // Nix パッケージインストール
   z.object({
     component: z.literal("nix.install"),
@@ -35,12 +35,12 @@ export const ComponentSchema = z.discriminatedUnion("component", [
       packages: z.array(z.string()),
     }),
   }),
-  
+
   // ファイアウォール セットアップ
   z.object({
     component: z.literal("firewall.setup"),
   }),
-  
+
   // ファイアウォール ドメイン設定
   z.object({
     component: z.literal("firewall.domains"),
@@ -48,7 +48,7 @@ export const ComponentSchema = z.discriminatedUnion("component", [
       domains: z.array(z.string()),
     }),
   }),
-  
+
   // VS Code 拡張機能インストール
   z.object({
     component: z.literal("vscode.install"),
@@ -56,7 +56,7 @@ export const ComponentSchema = z.discriminatedUnion("component", [
       extensions: z.array(z.string()),
     }),
   }),
-  
+
   // シェル設定
   z.object({
     component: z.literal("shell.setup"),
@@ -74,7 +74,7 @@ export const DevcontainerConfigSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
   components: z.array(
-    z.union([ComponentSchema, SimpleComponentSchema])
+    z.union([ComponentSchema, SimpleComponentSchema]),
   ),
 });
 

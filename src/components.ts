@@ -3,7 +3,7 @@ import type { Component, SimpleComponent } from "./types.ts";
 // コンポーネントの処理結果
 export interface ComponentResult {
   dockerfileLines: string[];
-  devcontainerConfig: Record<string, any>;
+  devcontainerConfig: Record<string, unknown>;
   scripts: Record<string, string>;
 }
 
@@ -18,8 +18,8 @@ export abstract class BaseComponentHandler implements ComponentHandler {
 
   protected createResult(
     dockerfileLines: string[] = [],
-    devcontainerConfig: Record<string, any> = {},
-    scripts: Record<string, string> = {}
+    devcontainerConfig: Record<string, unknown> = {},
+    scripts: Record<string, string> = {},
   ): ComponentResult {
     return {
       dockerfileLines,
@@ -35,7 +35,7 @@ export class AptInstallHandler extends BaseComponentHandler {
     if (typeof component === "string") {
       throw new Error("apt.install requires parameters");
     }
-    
+
     if (component.component !== "apt.install") {
       throw new Error("Invalid component type");
     }
@@ -53,10 +53,10 @@ export class AptInstallHandler extends BaseComponentHandler {
 
 // mise セットアップ
 export class MiseSetupHandler extends BaseComponentHandler {
-  handle(component: Component | SimpleComponent): ComponentResult {
+  handle(_component: Component | SimpleComponent): ComponentResult {
     const dockerfileLines = [
       "RUN curl https://mise.run | sh",
-      "ENV PATH=\"/root/.local/bin:$PATH\"",
+      'ENV PATH="/root/.local/bin:$PATH"',
     ];
 
     return this.createResult(dockerfileLines);
@@ -69,13 +69,13 @@ export class MiseInstallHandler extends BaseComponentHandler {
     if (typeof component === "string") {
       throw new Error("mise.install requires parameters");
     }
-    
+
     if (component.component !== "mise.install") {
       throw new Error("Invalid component type");
     }
 
     const packages = component.params.packages;
-    const dockerfileLines = packages.map(pkg => `RUN mise use -g ${pkg}`);
+    const dockerfileLines = packages.map((pkg) => `RUN mise use -g ${pkg}`);
 
     return this.createResult(dockerfileLines);
   }
@@ -83,10 +83,10 @@ export class MiseInstallHandler extends BaseComponentHandler {
 
 // Nix セットアップ
 export class NixSetupHandler extends BaseComponentHandler {
-  handle(component: Component | SimpleComponent): ComponentResult {
+  handle(_component: Component | SimpleComponent): ComponentResult {
     const dockerfileLines = [
       "RUN curl -L https://nixos.org/nix/install | sh -s -- --daemon",
-      "ENV PATH=\"/nix/var/nix/profiles/default/bin:$PATH\"",
+      'ENV PATH="/nix/var/nix/profiles/default/bin:$PATH"',
     ];
 
     return this.createResult(dockerfileLines);
@@ -99,7 +99,7 @@ export class NixInstallHandler extends BaseComponentHandler {
     if (typeof component === "string") {
       throw new Error("nix.install requires parameters");
     }
-    
+
     if (component.component !== "nix.install") {
       throw new Error("Invalid component type");
     }
@@ -115,7 +115,7 @@ export class NixInstallHandler extends BaseComponentHandler {
 
 // ファイアウォール セットアップ
 export class FirewallSetupHandler extends BaseComponentHandler {
-  handle(component: Component | SimpleComponent): ComponentResult {
+  handle(_component: Component | SimpleComponent): ComponentResult {
     const dockerfileLines = [
       "RUN apt-get update && apt-get install -y iptables",
     ];
@@ -141,13 +141,13 @@ export class FirewallDomainsHandler extends BaseComponentHandler {
     if (typeof component === "string") {
       throw new Error("firewall.domains requires parameters");
     }
-    
+
     if (component.component !== "firewall.domains") {
       throw new Error("Invalid component type");
     }
 
     const domains = component.params.domains;
-    const allowRules = domains.map(domain => 
+    const allowRules = domains.map((domain) =>
       `iptables -A OUTPUT -d ${domain} -j ACCEPT`
     ).join("\n");
 
@@ -168,7 +168,7 @@ export class VscodeInstallHandler extends BaseComponentHandler {
     if (typeof component === "string") {
       throw new Error("vscode.install requires parameters");
     }
-    
+
     if (component.component !== "vscode.install") {
       throw new Error("Invalid component type");
     }
@@ -192,7 +192,7 @@ export class ShellSetupHandler extends BaseComponentHandler {
     if (typeof component === "string") {
       throw new Error("shell.setup requires parameters");
     }
-    
+
     if (component.component !== "shell.setup") {
       throw new Error("Invalid component type");
     }

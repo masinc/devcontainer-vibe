@@ -1,31 +1,42 @@
-import { DevcontainerConfigSchema, type DevcontainerConfig } from "./types.ts";
+import { type DevcontainerConfig, DevcontainerConfigSchema } from "./types.ts";
 import { ComponentHandlerFactory } from "./components.ts";
+import { ensureDir, exists } from "@std/fs";
+import { join } from "@std/path";
 
 export class DevcontainerGenerator {
   private handlerFactory = new ComponentHandlerFactory();
 
   async generate(configPath: string, outputDir: string): Promise<void> {
+    // 出力ディレクトリの存在確認
+    if (await exists(outputDir)) {
+      throw new Error(
+        `Output directory '${outputDir}' already exists. Please remove it or use a different output directory.`,
+      );
+    }
+
     // 設定ファイルの読み込み
     const configText = await Deno.readTextFile(configPath);
     const configData = JSON.parse(configText);
-    
+
     // スキーマ検証
     const config = DevcontainerConfigSchema.parse(configData);
-    
+
     // 各コンポーネントの処理
     const results = this.processComponents(config);
-    
+
     // ファイル生成
     await this.generateFiles(config, results, outputDir);
   }
 
   private processComponents(config: DevcontainerConfig) {
     const allDockerfileLines: string[] = [];
-    const allDevcontainerConfig: Record<string, any> = {};
+    const allDevcontainerConfig: Record<string, unknown> = {};
     const allScripts: Record<string, string> = {};
 
     for (const component of config.components) {
-      const componentType = typeof component === "string" ? component : component.component;
+      const componentType = typeof component === "string"
+        ? component
+        : component.component;
       const handler = this.handlerFactory.getHandler(componentType);
       const result = handler.handle(component);
 
@@ -42,16 +53,25 @@ export class DevcontainerGenerator {
     };
   }
 
-  private mergeConfig(target: Record<string, any>, source: Record<string, any>): void {
+  private mergeConfig(
+    target: Record<string, unknown>,
+    source: Record<string, unknown>,
+  ): void {
     for (const [key, value] of Object.entries(source)) {
       if (key === "customizations" && typeof value === "object") {
         target[key] = target[key] || {};
-        this.mergeConfig(target[key], value);
+        this.mergeConfig(
+          target[key] as Record<string, unknown>,
+          value as Record<string, unknown>,
+        );
       } else if (Array.isArray(value)) {
-        target[key] = (target[key] || []).concat(value);
+        target[key] = (target[key] as unknown[] || []).concat(value);
       } else if (typeof value === "object") {
         target[key] = target[key] || {};
-        this.mergeConfig(target[key], value);
+        this.mergeConfig(
+          target[key] as Record<string, unknown>,
+          value as Record<string, unknown>,
+        );
       } else {
         target[key] = value;
       }
@@ -60,28 +80,39 @@ export class DevcontainerGenerator {
 
   private async generateFiles(
     config: DevcontainerConfig,
-    results: any,
-    outputDir: string
+    results: {
+      dockerfileLines: string[];
+      devcontainerConfig: Record<string, unknown>;
+      scripts: Record<string, string>;
+    },
+    outputDir: string,
   ): Promise<void> {
     // 出力ディレクトリを作成
-    await Deno.mkdir(outputDir, { recursive: true });
+    await ensureDir(outputDir);
 
     // Dockerfile生成
     const dockerfile = this.generateDockerfile(results.dockerfileLines);
-    await Deno.writeTextFile(`${outputDir}/Dockerfile`, dockerfile);
+    await Deno.writeTextFile(join(outputDir, "Dockerfile"), dockerfile);
 
     // devcontainer.json生成
-    const devcontainerJson = this.generateDevcontainerJson(config, results.devcontainerConfig);
-    await Deno.writeTextFile(`${outputDir}/devcontainer.json`, devcontainerJson);
+    const devcontainerJson = this.generateDevcontainerJson(
+      config,
+      results.devcontainerConfig,
+    );
+    await Deno.writeTextFile(
+      join(outputDir, "devcontainer.json"),
+      devcontainerJson,
+    );
 
     // スクリプト生成
     if (Object.keys(results.scripts).length > 0) {
-      const scriptsDir = `${outputDir}/scripts`;
-      await Deno.mkdir(scriptsDir, { recursive: true });
-      
+      const scriptsDir = join(outputDir, "scripts");
+      await ensureDir(scriptsDir);
+
       for (const [filename, content] of Object.entries(results.scripts)) {
-        await Deno.writeTextFile(`${scriptsDir}/${filename}`, content as string);
-        await Deno.chmod(`${scriptsDir}/${filename}`, 0o755);
+        const scriptPath = join(scriptsDir, filename);
+        await Deno.writeTextFile(scriptPath, content as string);
+        await Deno.chmod(scriptPath, 0o755);
       }
     }
   }
@@ -97,7 +128,10 @@ USER vscode
 `;
   }
 
-  private generateDevcontainerJson(config: DevcontainerConfig, additionalConfig: Record<string, any>): string {
+  private generateDevcontainerJson(
+    config: DevcontainerConfig,
+    additionalConfig: Record<string, unknown>,
+  ): string {
     const baseConfig = {
       name: config.name,
       ...(config.description && { description: config.description }),
