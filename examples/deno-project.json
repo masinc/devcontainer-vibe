@@ -1,6 +1,5 @@
 {
   "name": "deno-development",
-  "description": "Deno development environment with essential tools",
   "components": [
     {
       "name": "apt.install",

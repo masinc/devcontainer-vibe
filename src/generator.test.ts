@@ -46,10 +46,6 @@ Deno.test("DevcontainerGenerator - generate creates correct devcontainer.json", 
 
     // Check basic structure
     assertEquals(devcontainer.name, "minimal-deno");
-    assertEquals(
-      devcontainer.description,
-      "Minimal Deno development environment",
-    );
     assertEquals(devcontainer.build.dockerfile, "Dockerfile");
     assertEquals(devcontainer.build.context, ".");
     assertEquals(devcontainer.remoteUser, "vscode");
@@ -102,33 +98,6 @@ Deno.test("DevcontainerGenerator - generate creates scripts when needed", async 
   }
 });
 
-Deno.test("DevcontainerGenerator - generate handles config without description", async () => {
-  const generator = new DevcontainerGenerator();
-  const tempDir = await Deno.makeTempDir();
-
-  // Create test config without description
-  const configContent = JSON.stringify({
-    name: "test-no-desc",
-    components: ["mise.setup"],
-  });
-
-  const configPath = join(tempDir, "test-config.json");
-  await Deno.writeTextFile(configPath, configContent);
-
-  try {
-    await generator.generate(configPath, join(tempDir, "output"));
-
-    const devcontainerContent = await Deno.readTextFile(
-      join(tempDir, "output", "devcontainer.json"),
-    );
-    const devcontainer = JSON.parse(devcontainerContent);
-
-    assertEquals(devcontainer.name, "test-no-desc");
-    assertEquals(devcontainer.description, undefined);
-  } finally {
-    await Deno.remove(tempDir, { recursive: true });
-  }
-});
 
 Deno.test("DevcontainerGenerator - mergeConfig handles arrays", async () => {
   const generator = new DevcontainerGenerator();

@@ -20,7 +20,6 @@ Generatorで使用される設定ファイル形式の包括的なガイドで�
 ```json
 {
   "name": "string",
-  "description": "string (オプション)",
   "components": [
     // コンポーネントオブジェクトと文字列の配列
   ]
@@ -32,7 +31,6 @@ Generatorで使用される設定ファイル形式の包括的なガイドで�
 | プロパティ    | 型       | 必須 | 説明                                      |
 | ------------- | -------- | ---- | ----------------------------------------- |
 | `name`        | `string` | ✅   | devcontainer環境の名前                    |
-| `description` | `string` | ❌   | 環境の説明（オプション）                  |
 | `components`  | `array`  | ✅   | インストール/設定するコンポーネントの配列 |
 
 ## 設定スキーマ
@@ -469,8 +467,7 @@ deno task generate --config configs/testing.json
 
 ```json
 {
-  "name": "deno-web-api-development",
-  "description": "TypeScript、テスト、デバッグツールを含むDeno Web API開発環境"
+  "name": "deno-web-api-development"
 }
 ```
 
@@ -524,7 +521,6 @@ deno task generate --config configs/testing.json
 ```json
 {
   "name": "minimal-deno",
-  "description": "最小限のDeno開発環境",
   "components": [
     {
       "component": "apt.install",
@@ -554,7 +550,6 @@ deno task generate --config configs/testing.json
 ```json
 {
   "name": "fullstack-development",
-  "description": "完全なフルスタック開発環境",
   "components": [
     {
       "component": "apt.install",
@@ -615,7 +610,6 @@ deno task generate --config configs/testing.json
 ```json
 {
   "name": "secure-development",
-  "description": "ネットワークアクセスを制限したセキュリティ重視の開発環境",
   "components": [
     {
       "component": "apt.install",

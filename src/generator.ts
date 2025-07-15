@@ -134,7 +134,6 @@ USER vscode
   ): string {
     const baseConfig = {
       name: config.name,
-      ...(config.description && { description: config.description }),
       build: {
         dockerfile: "Dockerfile",
         context: ".",

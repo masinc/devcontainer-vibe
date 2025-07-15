@@ -21,7 +21,6 @@ components of your devcontainer environment. Here's the basic structure:
 ```json
 {
   "name": "string",
-  "description": "string (optional)",
   "components": [
     // Array of component objects and strings
   ]
@@ -33,7 +32,6 @@ components of your devcontainer environment. Here's the basic structure:
 | Property      | Type     | Required | Description                              |
 | ------------- | -------- | -------- | ---------------------------------------- |
 | `name`        | `string` | ✅       | The name of the devcontainer environment |
-| `description` | `string` | ❌       | Optional description of the environment  |
 | `components`  | `array`  | ✅       | Array of components to install/configure |
 
 ## Configuration Schema
@@ -473,8 +471,7 @@ Use clear, descriptive names for your configurations:
 
 ```json
 {
-  "name": "deno-web-api-development",
-  "description": "Development environment for Deno web API with TypeScript, testing, and debugging tools"
+  "name": "deno-web-api-development"
 }
 ```
 
@@ -528,7 +525,6 @@ The configuration is validated using Zod schemas. Common validation errors:
 ```json
 {
   "name": "minimal-deno",
-  "description": "Minimal Deno development environment",
   "components": [
     {
       "component": "apt.install",
@@ -558,7 +554,6 @@ The configuration is validated using Zod schemas. Common validation errors:
 ```json
 {
   "name": "fullstack-development",
-  "description": "Complete full-stack development environment",
   "components": [
     {
       "component": "apt.install",
@@ -619,7 +614,6 @@ The configuration is validated using Zod schemas. Common validation errors:
 ```json
 {
   "name": "secure-development",
-  "description": "Security-focused development environment with restricted network access",
   "components": [
     {
       "component": "apt.install",

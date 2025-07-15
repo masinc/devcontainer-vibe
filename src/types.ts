@@ -110,7 +110,6 @@ export const SimpleComponentSchema = z.string();
 // 設定ファイル全体のスキーマ
 export const DevcontainerConfigSchema = z.object({
   name: z.string(),
-  description: z.string().optional(),
   components: z.array(
     z.union([ComponentSchema, SimpleComponentSchema]),
   ),

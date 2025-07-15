@@ -199,7 +199,6 @@ Deno.test("SimpleComponentSchema - invalid type should fail", () => {
 Deno.test("DevcontainerConfigSchema - valid config", () => {
   const validConfig = {
     name: "test-project",
-    description: "Test description",
     components: [
       "mise.setup",
       {
@@ -216,26 +215,10 @@ Deno.test("DevcontainerConfigSchema - valid config", () => {
 
   if (result.success) {
     assertEquals(result.data.name, "test-project");
-    assertEquals(result.data.description, "Test description");
     assertEquals(result.data.components.length, 2);
   }
 });
 
-Deno.test("DevcontainerConfigSchema - config without description", () => {
-  const validConfig = {
-    name: "test-project",
-    components: [
-      "mise.setup",
-    ],
-  };
-
-  const result = DevcontainerConfigSchema.safeParse(validConfig);
-  assertEquals(result.success, true);
-
-  if (result.success) {
-    assertEquals(result.data.description, undefined);
-  }
-});
 
 Deno.test("DevcontainerConfigSchema - missing name should fail", () => {
   const invalidConfig = {
