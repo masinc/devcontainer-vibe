@@ -216,14 +216,112 @@ export class FirewallDomainHandler extends BaseComponentHandler {
     // 重複を削除
     const uniqueDomains = [...new Set(allDomains)];
 
-    const allowRules = uniqueDomains.map((domain) =>
-      `iptables -A OUTPUT -d ${domain} -j ACCEPT`
-    ).join("\n");
+    // ドメインを解決してIPアドレスを取得するスクリプトを生成
+    const domainResolutionScript = uniqueDomains.map((domain) => `
+echo "🔍 Resolving ${domain}..."
+IPS=$(dig +short A ${domain} 2>/dev/null)
+if [ -n "$IPS" ]; then
+  for IP in $IPS; do
+    if [[ $IP =~ ^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$ ]]; then
+      echo "📍 Adding IP $IP for ${domain}"
+      iptables -A OUTPUT -d $IP -j ACCEPT
+    fi
+  done
+else
+  echo "⚠️  Failed to resolve ${domain}"
+fi`).join("\n");
 
     const scripts = {
       "firewall-domain.sh": `#!/bin/bash
-# Allow specific domains
-${allowRules}
+# Allow specific domains by resolving their IP addresses
+set -e
+
+# Install dig if not available
+if ! command -v dig &> /dev/null; then
+  echo "📦 Installing dnsutils for domain resolution..."
+  apt-get update && apt-get install -y dnsutils
+fi
+
+echo "🌐 Resolving and allowing domains..."
+${domainResolutionScript}
+
+echo "✅ Domain firewall rules applied"
+`,
+    };
+
+    return this.createResult([], {}, scripts);
+  }
+}
+
+// GitHub動的IP範囲取得ファイアウォール設定
+export class FirewallGithubHandler extends BaseComponentHandler {
+  handle(_component: Component | SimpleComponent): ComponentResult {
+    const scripts = {
+      "firewall-github-dynamic.sh": `#!/bin/bash
+# GitHub dynamic IP ranges from API
+set -e
+
+echo "🐙 Fetching GitHub IP ranges from API..."
+
+# Install required tools if not available
+if ! command -v curl &> /dev/null; then
+  echo "📦 Installing curl..."
+  apt-get update && apt-get install -y curl
+fi
+
+if ! command -v jq &> /dev/null; then
+  echo "📦 Installing jq for JSON parsing..."
+  apt-get update && apt-get install -y jq
+fi
+
+# Fetch GitHub meta information
+GITHUB_META=$(curl -s https://api.github.com/meta)
+if [ $? -ne 0 ]; then
+  echo "❌ Failed to fetch GitHub IP ranges"
+  exit 1
+fi
+
+echo "📋 Processing GitHub IP ranges..."
+
+# Extract and add web, API, and git IP ranges
+for RANGE_TYPE in web api git; do
+  echo "🔍 Processing $RANGE_TYPE ranges..."
+  echo "$GITHUB_META" | jq -r ".\\$RANGE_TYPE[]" | while read -r CIDR; do
+    if [[ $CIDR =~ ^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+/[0-9]+$ ]]; then
+      echo "📍 Adding GitHub $RANGE_TYPE range: $CIDR"
+      iptables -A OUTPUT -d $CIDR -j ACCEPT
+    else
+      echo "⚠️  Invalid CIDR range: $CIDR"
+    fi
+  done
+done
+
+echo "✅ GitHub dynamic IP ranges configured"
+`,
+    };
+
+    return this.createResult([], {}, scripts);
+  }
+}
+
+// sudo無効化コンポーネント
+export class SudoDisableHandler extends BaseComponentHandler {
+  handle(_component: Component | SimpleComponent): ComponentResult {
+    const scripts = {
+      "disable-sudo.sh": `#!/bin/bash
+# Disable sudo access for security
+set -e
+
+echo "🔒 Disabling sudo access to prevent privilege escalation..."
+
+# Remove sudo access by clearing sudoers entries for vscode user
+sed -i '/vscode/d' /etc/sudoers 2>/dev/null || true
+rm -f /etc/sudoers.d/vscode 2>/dev/null || true
+
+# Make sudo binary unusable for non-root users
+chmod 700 /usr/bin/sudo 2>/dev/null || true
+
+echo "🔐 sudo access disabled - system is now locked down"
 `,
     };
 
@@ -287,6 +385,8 @@ export class ComponentHandlerFactory {
     ["nix.install", new NixInstallHandler()],
     ["firewall.setup", new FirewallSetupHandler()],
     ["firewall.domain", new FirewallDomainHandler()],
+    ["firewall.github", new FirewallGithubHandler()],
+    ["sudo.disable", new SudoDisableHandler()],
     ["vscode.install", new VscodeInstallHandler()],
     ["shell.setup", new ShellSetupHandler()],
   ]);

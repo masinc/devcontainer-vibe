@@ -91,13 +91,14 @@ export class DevcontainerGenerator {
     await ensureDir(outputDir);
 
     // Dockerfile生成
-    const dockerfile = this.generateDockerfile(results.dockerfileLines);
+    const dockerfile = this.generateDockerfile(results.dockerfileLines, results.scripts);
     await Deno.writeTextFile(join(outputDir, "Dockerfile"), dockerfile);
 
     // devcontainer.json生成
     const devcontainerJson = this.generateDevcontainerJson(
       config,
       results.devcontainerConfig,
+      results.scripts,
     );
     await Deno.writeTextFile(
       join(outputDir, "devcontainer.json"),
@@ -117,12 +118,16 @@ export class DevcontainerGenerator {
     }
   }
 
-  private generateDockerfile(lines: string[]): string {
+  private generateDockerfile(lines: string[], scripts: Record<string, string>): string {
+    const scriptCopyLines = Object.keys(scripts).length > 0 
+      ? "\nCOPY scripts/ ./scripts/\nRUN chmod +x ./scripts/*\n"
+      : "";
+
     return `FROM mcr.microsoft.com/devcontainers/base:jammy
 
 USER root
 
-${lines.join("\n")}
+${lines.join("\n")}${scriptCopyLines}
 
 USER vscode
 `;
@@ -131,8 +136,9 @@ USER vscode
   private generateDevcontainerJson(
     config: DevcontainerConfig,
     additionalConfig: Record<string, unknown>,
+    scripts: Record<string, string>,
   ): string {
-    const baseConfig = {
+    const baseConfig: Record<string, unknown> = {
       name: config.name,
       build: {
         dockerfile: "Dockerfile",
@@ -141,6 +147,14 @@ USER vscode
       remoteUser: "vscode",
       ...additionalConfig,
     };
+
+    // スクリプトがある場合はpostCreateCommandを追加
+    if (Object.keys(scripts).length > 0) {
+      const scriptCommands = Object.keys(scripts).map(filename => 
+        `./scripts/${filename}`
+      ).join(" && ");
+      baseConfig.postCreateCommand = scriptCommands;
+    }
 
     return JSON.stringify(baseConfig, null, 2);
   }

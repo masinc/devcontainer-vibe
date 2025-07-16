@@ -7,28 +7,64 @@ export const FIREWALL_PRESETS = {
     "api.github.com",
     "raw.githubusercontent.com",
     "objects.githubusercontent.com",
+    "codeload.github.com",
+    "avatars.githubusercontent.com",
+    "ghcr.io",
+  ],
+  npm: [
+    "registry.npmjs.org",
+    "npm.pkg.github.com",
+    "npmjs.com",
+  ],
+  anthropic: [
+    "api.anthropic.com",
+    "claude.ai",
+    "console.anthropic.com",
+  ],
+  nix: [
+    "cache.nixos.org",
+    "nixos.org",
+    "channels.nixos.org",
+    "nix-community.cachix.org",
+    "hydra.nixos.org",
+  ],
+  deno: [
+    "deno.land",
+    "jsr.io",
+    "deno.com",
+  ],
+  python: [
+    "pypi.org",
+    "files.pythonhosted.org",
+    "pythonhosted.org",
+  ],
+  google: [
+    "googleapis.com",
+    "accounts.google.com",
+    "oauth2.googleapis.com",
+    "generativelanguage.googleapis.com",
+    "ai.google.dev",
+  ],
+  ubuntu: [
+    "archive.ubuntu.com",
+    "security.ubuntu.com",
+    "ports.ubuntu.com",
+    "keyserver.ubuntu.com",
+  ],
+  debian: [
+    "deb.debian.org",
+    "security.debian.org",
+    "ftp.debian.org",
+  ],
+  mise: [
+    "mise.jdx.dev",
+    "mise-releases.s3.amazonaws.com",
   ],
   vscode: [
     "marketplace.visualstudio.com",
     "vscode.dev",
     "code.visualstudio.com",
     "open-vsx.org",
-  ],
-  npm: [
-    "registry.npmjs.org",
-    "npm.pkg.github.com",
-  ],
-  claude: [
-    "claude.ai",
-    "api.anthropic.com",
-  ],
-  deno: [
-    "deno.land",
-    "jsr.io",
-  ],
-  python: [
-    "pypi.org",
-    "files.pythonhosted.org",
   ],
 } as const;
 
@@ -85,6 +121,16 @@ export const ComponentSchema = z.discriminatedUnion("name", [
       (data) => data.presets || data.allows,
       { message: "Either presets or allows must be provided" },
     ),
+  }),
+
+  // ファイアウォール GitHub動的IP設定
+  z.object({
+    name: z.literal("firewall.github"),
+  }),
+
+  // sudo無効化
+  z.object({
+    name: z.literal("sudo.disable"),
   }),
 
   // VS Code 拡張機能インストール

@@ -86,7 +86,7 @@ Deno.test("DevcontainerGenerator - generate creates scripts when needed", async 
       join(scriptsDir, "firewall-domain.sh"),
     );
     assertEquals(
-      firewallDomain.includes("iptables -A OUTPUT -d github.com -j ACCEPT"),
+      firewallDomain.includes("🔍 Resolving github.com"),
       true,
     );
 

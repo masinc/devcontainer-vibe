@@ -11,7 +11,7 @@ Deno.test("FIREWALL_PRESETS - should contain expected presets", () => {
   assertEquals(typeof FIREWALL_PRESETS.npm, "object");
   assertEquals(typeof FIREWALL_PRESETS.deno, "object");
   assertEquals(typeof FIREWALL_PRESETS.vscode, "object");
-  assertEquals(typeof FIREWALL_PRESETS.claude, "object");
+  assertEquals(typeof FIREWALL_PRESETS.anthropic, "object");
   assertEquals(typeof FIREWALL_PRESETS.python, "object");
 
   // GitHub プリセットの内容をチェック

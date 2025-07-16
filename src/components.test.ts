@@ -3,12 +3,14 @@ import {
   AptInstallHandler,
   ComponentHandlerFactory,
   FirewallDomainHandler,
+  FirewallGithubHandler,
   FirewallSetupHandler,
   MiseInstallHandler,
   MiseSetupHandler,
   NixInstallHandler,
   NixSetupHandler,
   ShellSetupHandler,
+  SudoDisableHandler,
   VscodeInstallHandler,
 } from "./components.ts";
 
@@ -339,6 +341,34 @@ Deno.test("ShellSetupHandler - valid component", () => {
   assertEquals(result.dockerfileLines[2], "RUN chsh -s /bin/fish vscode");
 });
 
+Deno.test("FirewallGithubHandler - valid component", () => {
+  const handler = new FirewallGithubHandler();
+  const result = handler.handle("firewall.github");
+
+  assertEquals(result.dockerfileLines.length, 0);
+  assertEquals(Object.keys(result.devcontainerConfig).length, 0);
+  assertEquals(Object.keys(result.scripts).length, 1);
+  assertEquals("firewall-github-dynamic.sh" in result.scripts, true);
+  assertEquals(
+    result.scripts["firewall-github-dynamic.sh"].includes("api.github.com/meta"),
+    true,
+  );
+});
+
+Deno.test("SudoDisableHandler - valid component", () => {
+  const handler = new SudoDisableHandler();
+  const result = handler.handle("sudo.disable");
+
+  assertEquals(result.dockerfileLines.length, 0);
+  assertEquals(Object.keys(result.devcontainerConfig).length, 0);
+  assertEquals(Object.keys(result.scripts).length, 1);
+  assertEquals("disable-sudo.sh" in result.scripts, true);
+  assertEquals(
+    result.scripts["disable-sudo.sh"].includes("chmod 700 /usr/bin/sudo"),
+    true,
+  );
+});
+
 Deno.test("ComponentHandlerFactory - get all handlers", () => {
   const factory = new ComponentHandlerFactory();
 
@@ -351,6 +381,8 @@ Deno.test("ComponentHandlerFactory - get all handlers", () => {
     "nix.install",
     "firewall.setup",
     "firewall.domain",
+    "firewall.github",
+    "sudo.disable",
     "vscode.install",
     "shell.setup",
   ];
