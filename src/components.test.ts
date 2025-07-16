@@ -23,13 +23,22 @@ Deno.test("AptInstallHandler - valid component", () => {
 
   const result = handler.handle(component);
 
-  assertEquals(result.dockerfileLines.length, 3);
+  assertEquals(result.dockerfileLines.length, 6);
+  assertEquals(result.dockerfileLines[0], "USER root");
   assertEquals(
-    result.dockerfileLines[0],
-    "RUN apt-get update && apt-get install -y \\",
+    result.dockerfileLines[1],
+    "RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \\",
   );
-  assertEquals(result.dockerfileLines[1], "    git curl vim \\");
-  assertEquals(result.dockerfileLines[2], "    && rm -rf /var/lib/apt/lists/*");
+  assertEquals(
+    result.dockerfileLines[2],
+    "    --mount=target=/var/cache/apt,type=cache,sharing=locked \\",
+  );
+  assertEquals(
+    result.dockerfileLines[3],
+    "    apt-get update && apt-get install -y \\",
+  );
+  assertEquals(result.dockerfileLines[4], "    git curl vim \\");
+  assertEquals(result.dockerfileLines[5], "    && rm -rf /var/lib/apt/lists/*");
   assertEquals(Object.keys(result.devcontainerConfig).length, 0);
   assertEquals(Object.keys(result.scripts).length, 0);
 });
@@ -64,9 +73,30 @@ Deno.test("MiseSetupHandler - valid component", () => {
   const handler = new MiseSetupHandler();
   const result = handler.handle("mise.setup");
 
-  assertEquals(result.dockerfileLines.length, 2);
-  assertEquals(result.dockerfileLines[0], "RUN curl https://mise.run | sh");
-  assertEquals(result.dockerfileLines[1], 'ENV PATH="/root/.local/bin:$PATH"');
+  assertEquals(result.dockerfileLines.length, 11);
+  assertEquals(result.dockerfileLines[0], "USER root");
+  assertEquals(
+    result.dockerfileLines[1],
+    "RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \\",
+  );
+  assertEquals(
+    result.dockerfileLines[2],
+    "    --mount=target=/var/cache/apt,type=cache,sharing=locked \\",
+  );
+  assertEquals(result.dockerfileLines[3], "    <<-EOS");
+  assertEquals(result.dockerfileLines[4], "    set -eux;");
+  assertEquals(result.dockerfileLines[5], "    install -dm 755 /etc/apt/keyrings &&");
+  assertEquals(
+    result.dockerfileLines[6],
+    "    wget -qO - https://mise.jdx.dev/gpg-key.pub | gpg --dearmor | tee /etc/apt/keyrings/mise-archive-keyring.gpg 1> /dev/null &&",
+  );
+  assertEquals(
+    result.dockerfileLines[7],
+    "    echo \"deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.gpg arch=amd64] https://mise.jdx.dev/deb stable main\" | tee /etc/apt/sources.list.d/mise.list &&",
+  );
+  assertEquals(result.dockerfileLines[8], "    apt update &&");
+  assertEquals(result.dockerfileLines[9], "    apt install -y mise");
+  assertEquals(result.dockerfileLines[10], "EOS");
 });
 
 Deno.test("MiseInstallHandler - valid component", () => {
@@ -80,9 +110,18 @@ Deno.test("MiseInstallHandler - valid component", () => {
 
   const result = handler.handle(component);
 
-  assertEquals(result.dockerfileLines.length, 2);
-  assertEquals(result.dockerfileLines[0], "RUN mise use -g deno@latest");
-  assertEquals(result.dockerfileLines[1], "RUN mise use -g node@lts");
+  assertEquals(result.dockerfileLines.length, 8);
+  assertEquals(result.dockerfileLines[0], "USER root");
+  assertEquals(
+    result.dockerfileLines[1],
+    "RUN --mount=target=/home/vscode/.cache/mise,type=cache,sharing=locked,uid=1000,gid=1000 \\",
+  );
+  assertEquals(result.dockerfileLines[2], "    <<-EOS");
+  assertEquals(result.dockerfileLines[3], "    set -ex;");
+  assertEquals(result.dockerfileLines[4], "    mise use -g deno@latest;");
+  assertEquals(result.dockerfileLines[5], "    mise use -g node@lts;");
+  assertEquals(result.dockerfileLines[6], "    mise install;");
+  assertEquals(result.dockerfileLines[7], "EOS");
 });
 
 Deno.test("NixSetupHandler - valid component", () => {
@@ -117,28 +156,38 @@ Deno.test("NixInstallHandler - valid component", () => {
 
   const result = handler.handle(component);
 
-  assertEquals(result.dockerfileLines.length, 5);
+  assertEquals(result.dockerfileLines.length, 9);
   assertEquals(result.dockerfileLines[0], "# Install Nix packages as vscode user");
   assertEquals(result.dockerfileLines[1], "USER vscode");
   assertEquals(
     result.dockerfileLines[2],
-    "RUN . ~/.nix-profile/etc/profile.d/nix.sh && \\",
+    "RUN --mount=target=/tmp/nix-download-cache,type=cache,sharing=locked \\",
   );
-  assertEquals(
-    result.dockerfileLines[3],
-    "    nix-env -iA nixpkgs.starship nixpkgs.fish",
-  );
-  assertEquals(result.dockerfileLines[4], "USER root");
+  assertEquals(result.dockerfileLines[3], "    <<-EOS");
+  assertEquals(result.dockerfileLines[4], "    set -ex;");
+  assertEquals(result.dockerfileLines[5], "    . ~/.nix-profile/etc/profile.d/nix.sh;");
+  assertEquals(result.dockerfileLines[6], "    nix-env -iA nixpkgs.starship nixpkgs.fish;");
+  assertEquals(result.dockerfileLines[7], "EOS");
+  assertEquals(result.dockerfileLines[8], "USER root");
 });
 
 Deno.test("FirewallSetupHandler - valid component", () => {
   const handler = new FirewallSetupHandler();
   const result = handler.handle("firewall.setup");
 
-  assertEquals(result.dockerfileLines.length, 1);
+  assertEquals(result.dockerfileLines.length, 4);
+  assertEquals(result.dockerfileLines[0], "USER root");
   assertEquals(
-    result.dockerfileLines[0],
-    "RUN apt-get update && apt-get install -y iptables",
+    result.dockerfileLines[1],
+    "RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \\",
+  );
+  assertEquals(
+    result.dockerfileLines[2],
+    "    --mount=target=/var/cache/apt,type=cache,sharing=locked \\",
+  );
+  assertEquals(
+    result.dockerfileLines[3],
+    "    apt-get update && apt-get install -y iptables",
   );
   assertEquals(Object.keys(result.scripts).length, 1);
   assertEquals("firewall-setup.sh" in result.scripts, true);

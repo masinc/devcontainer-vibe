@@ -43,7 +43,10 @@ export class AptInstallHandler extends BaseComponentHandler {
 
     const packages = component.params.packages.join(" ");
     const dockerfileLines = [
-      "RUN apt-get update && apt-get install -y \\",
+      "USER root",
+      "RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \\",
+      "    --mount=target=/var/cache/apt,type=cache,sharing=locked \\",
+      "    apt-get update && apt-get install -y \\",
       `    ${packages} \\`,
       "    && rm -rf /var/lib/apt/lists/*",
     ];
@@ -56,8 +59,17 @@ export class AptInstallHandler extends BaseComponentHandler {
 export class MiseSetupHandler extends BaseComponentHandler {
   handle(_component: Component | SimpleComponent): ComponentResult {
     const dockerfileLines = [
-      "RUN curl https://mise.run | sh",
-      'ENV PATH="/root/.local/bin:$PATH"',
+      "USER root",
+      "RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \\",
+      "    --mount=target=/var/cache/apt,type=cache,sharing=locked \\",
+      "    <<-EOS",
+      "    set -eux;",
+      "    install -dm 755 /etc/apt/keyrings &&",
+      "    wget -qO - https://mise.jdx.dev/gpg-key.pub | gpg --dearmor | tee /etc/apt/keyrings/mise-archive-keyring.gpg 1> /dev/null &&",
+      "    echo \"deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.gpg arch=amd64] https://mise.jdx.dev/deb stable main\" | tee /etc/apt/sources.list.d/mise.list &&",
+      "    apt update &&",
+      "    apt install -y mise",
+      "EOS",
     ];
 
     return this.createResult(dockerfileLines);
@@ -76,7 +88,15 @@ export class MiseInstallHandler extends BaseComponentHandler {
     }
 
     const packages = component.params.packages;
-    const dockerfileLines = packages.map((pkg) => `RUN mise use -g ${pkg}`);
+    const dockerfileLines = [
+      "USER root",
+      "RUN --mount=target=/home/vscode/.cache/mise,type=cache,sharing=locked,uid=1000,gid=1000 \\",
+      "    <<-EOS",
+      "    set -ex;",
+      ...packages.map((pkg) => `    mise use -g ${pkg};`),
+      "    mise install;",
+      "EOS",
+    ];
 
     return this.createResult(dockerfileLines);
   }
@@ -124,8 +144,12 @@ export class NixInstallHandler extends BaseComponentHandler {
     const dockerfileLines = [
       "# Install Nix packages as vscode user",
       "USER vscode",
-      "RUN . ~/.nix-profile/etc/profile.d/nix.sh && \\",
-      `    nix-env -iA ${nixPackages}`,
+      "RUN --mount=target=/tmp/nix-download-cache,type=cache,sharing=locked \\",
+      "    <<-EOS",
+      "    set -ex;",
+      "    . ~/.nix-profile/etc/profile.d/nix.sh;",
+      `    nix-env -iA ${nixPackages};`,
+      "EOS",
       "USER root",
     ];
 
@@ -137,7 +161,10 @@ export class NixInstallHandler extends BaseComponentHandler {
 export class FirewallSetupHandler extends BaseComponentHandler {
   handle(_component: Component | SimpleComponent): ComponentResult {
     const dockerfileLines = [
-      "RUN apt-get update && apt-get install -y iptables",
+      "USER root",
+      "RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \\",
+      "    --mount=target=/var/cache/apt,type=cache,sharing=locked \\",
+      "    apt-get update && apt-get install -y iptables",
     ];
 
     const scripts = {

@@ -25,7 +25,7 @@ Deno.test("DevcontainerGenerator - generate creates correct Dockerfile", async (
       true,
     );
     assertEquals(dockerfile.includes("git curl"), true);
-    assertEquals(dockerfile.includes("curl https://mise.run"), true);
+    assertEquals(dockerfile.includes("apt install -y mise"), true);
     assertEquals(dockerfile.includes("mise use -g deno@latest"), true);
   } finally {
     await Deno.remove(tempDir, { recursive: true });
