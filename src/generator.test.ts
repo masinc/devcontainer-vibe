@@ -21,7 +21,7 @@ Deno.test("DevcontainerGenerator - generate creates correct Dockerfile", async (
 
     // Check specific commands from minimal config
     assertEquals(dockerfile.includes("apt install -y mise"), true);
-    assertEquals(dockerfile.includes("mise use -g node@24"), true);
+    assertEquals(dockerfile.includes("mise use -g node@lts"), true);
     assertEquals(dockerfile.includes("nix-shell '<home-manager>'"), true);
   } finally {
     await Deno.remove(tempDir, { recursive: true });
@@ -173,6 +173,90 @@ Deno.test("DevcontainerGenerator - processes multiple apt.install components", a
     // Should have multiple apt install commands
     assertEquals(dockerfile.includes("git curl"), true);
     assertEquals(dockerfile.includes("vim ripgrep"), true);
+  } finally {
+    await Deno.remove(tempDir, { recursive: true });
+  }
+});
+
+Deno.test("DevcontainerGenerator - prevents duplicate setup components", async () => {
+  const generator = new DevcontainerGenerator();
+  const tempDir = await Deno.makeTempDir();
+
+  try {
+    const configContent = JSON.stringify({
+      name: "duplicate-setup-test",
+      components: [
+        "mise.setup",
+        "mise.setup", // 重複
+      ],
+    });
+
+    const configPath = join(tempDir, "duplicate-config.json");
+    await Deno.writeTextFile(configPath, configContent);
+
+    // 重複エラーが発生することを確認
+    try {
+      await generator.generate(configPath, join(tempDir, "output"));
+      throw new Error("Should have thrown duplicate component error");
+    } catch (error) {
+      assertEquals((error as Error).message, "Component 'mise.setup' can only be used once");
+    }
+  } finally {
+    await Deno.remove(tempDir, { recursive: true });
+  }
+});
+
+Deno.test("DevcontainerGenerator - merges multiple shell.post-create components", async () => {
+  const generator = new DevcontainerGenerator();
+  const tempDir = await Deno.makeTempDir();
+
+  try {
+    const configContent = JSON.stringify({
+      name: "multi-post-create-test",
+      components: [
+        {
+          name: "shell.post-create",
+          params: {
+            user: "vscode",
+            commands: ["echo 'first command'", "npm install"],
+          },
+        },
+        {
+          name: "shell.post-create",
+          params: {
+            user: "root",
+            commands: ["echo 'root command'"],
+          },
+        },
+        {
+          name: "shell.post-create",
+          params: {
+            user: "vscode",
+            commands: ["echo 'second vscode command'"],
+          },
+        },
+      ],
+    });
+
+    const configPath = join(tempDir, "multi-post-create-config.json");
+    await Deno.writeTextFile(configPath, configContent);
+
+    await generator.generate(configPath, join(tempDir, "output"));
+
+    const vscodScript = await Deno.readTextFile(join(tempDir, "output", ".devcontainer", "scripts", "shell-post-create-vscode.sh"));
+    const rootScript = await Deno.readTextFile(join(tempDir, "output", ".devcontainer", "scripts", "shell-post-create-root.sh"));
+    const devcontainerJson = JSON.parse(await Deno.readTextFile(join(tempDir, "output", ".devcontainer", "devcontainer.json")));
+
+    // vscodスクリプトに該当するコマンドが含まれることを確認
+    assertEquals(vscodScript.includes("echo 'first command'"), true);
+    assertEquals(vscodScript.includes("npm install"), true);
+    assertEquals(vscodScript.includes("echo 'second vscode command'"), true);
+    
+    // rootスクリプトに該当するコマンドが含まれることを確認
+    assertEquals(rootScript.includes("echo 'root command'"), true);
+    
+    // 実行コマンドが正しく設定されることを確認
+    assertEquals(devcontainerJson.postCreateCommand, "/usr/local/scripts/shell-post-create-vscode.sh && sudo /usr/local/scripts/shell-post-create-root.sh");
   } finally {
     await Deno.remove(tempDir, { recursive: true });
   }

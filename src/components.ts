@@ -11,11 +11,13 @@ export interface ComponentResult {
 // コンポーネントハンドラーのインターフェース
 export interface ComponentHandler {
   handle(component: Component | SimpleComponent): ComponentResult;
+  readonly isSingleUse: boolean;
 }
 
 // 基本的なコンポーネントハンドラー
 export abstract class BaseComponentHandler implements ComponentHandler {
   abstract handle(component: Component | SimpleComponent): ComponentResult;
+  abstract readonly isSingleUse: boolean;
 
   protected createResult(
     dockerfileLines: string[] = [],
@@ -32,6 +34,7 @@ export abstract class BaseComponentHandler implements ComponentHandler {
 
 // APT パッケージインストール
 export class AptInstallHandler extends BaseComponentHandler {
+  readonly isSingleUse = false;
   handle(component: Component | SimpleComponent): ComponentResult {
     if (typeof component === "string") {
       throw new Error("apt.install requires parameters");
@@ -57,6 +60,7 @@ export class AptInstallHandler extends BaseComponentHandler {
 
 // mise セットアップ
 export class MiseSetupHandler extends BaseComponentHandler {
+  readonly isSingleUse = true;
   handle(_component: Component | SimpleComponent): ComponentResult {
     const dockerfileLines = [
       "USER root",
@@ -88,6 +92,7 @@ export class MiseSetupHandler extends BaseComponentHandler {
 
 // mise パッケージインストール
 export class MiseInstallHandler extends BaseComponentHandler {
+  readonly isSingleUse = false;
   handle(component: Component | SimpleComponent): ComponentResult {
     if (typeof component === "string") {
       throw new Error("mise.install requires parameters");
@@ -124,6 +129,7 @@ export class MiseInstallHandler extends BaseComponentHandler {
 
 // Nix セットアップ（Home-Manager対応）
 export class NixSetupHandler extends BaseComponentHandler {
+  readonly isSingleUse = true;
   handle(_component: Component | SimpleComponent): ComponentResult {
     const dockerfileLines = [
       "# Create nix directory and set ownership",
@@ -181,6 +187,7 @@ export class NixSetupHandler extends BaseComponentHandler {
 
 // Nix パッケージインストール（Home-Manager対応）
 export class NixInstallHandler extends BaseComponentHandler {
+  readonly isSingleUse = false;
   handle(component: Component | SimpleComponent): ComponentResult {
     if (typeof component === "string") {
       throw new Error("nix.install requires parameters");
@@ -252,6 +259,7 @@ ${packageList}
 
 // ファイアウォール セットアップ
 export class FirewallSetupHandler extends BaseComponentHandler {
+  readonly isSingleUse = true;
   handle(_component: Component | SimpleComponent): ComponentResult {
     const dockerfileLines = [
       "USER root",
@@ -346,6 +354,7 @@ fi
 
 // ファイアウォール ドメイン設定（統合版）
 export class FirewallDomainHandler extends BaseComponentHandler {
+  readonly isSingleUse = false;
   handle(component: Component | SimpleComponent): ComponentResult {
     if (typeof component === "string") {
       throw new Error("firewall.domain requires parameters");
@@ -412,6 +421,7 @@ echo "✅ Domain IPs added to firewall-allowed-domains ipset"
 
 // GitHub動的IP範囲取得ファイアウォール設定
 export class FirewallGithubApiHandler extends BaseComponentHandler {
+  readonly isSingleUse = true;
   handle(_component: Component | SimpleComponent): ComponentResult {
     const scripts = {
       "firewall-github-dynamic.sh": `#!/usr/bin/sudo /bin/bash
@@ -459,6 +469,7 @@ echo "✅ GitHub dynamic IP ranges added to firewall-allowed-domains ipset"
 
 // sudo無効化コンポーネント
 export class SudoDisableHandler extends BaseComponentHandler {
+  readonly isSingleUse = true;
   handle(_component: Component | SimpleComponent): ComponentResult {
     const scripts = {
       "disable-sudo.sh": `#!/usr/bin/sudo /bin/bash
@@ -484,6 +495,7 @@ echo "🔐 sudo access disabled - system is now locked down"
 
 // VS Code 拡張機能インストール
 export class VscodeInstallHandler extends BaseComponentHandler {
+  readonly isSingleUse = false;
   handle(component: Component | SimpleComponent): ComponentResult {
     if (typeof component === "string") {
       throw new Error("vscode.install requires parameters");
@@ -508,6 +520,7 @@ export class VscodeInstallHandler extends BaseComponentHandler {
 
 // シェル設定
 export class ShellSetupHandler extends BaseComponentHandler {
+  readonly isSingleUse = true;
   handle(component: Component | SimpleComponent): ComponentResult {
     if (typeof component === "string") {
       throw new Error("shell.setup requires parameters");
@@ -536,6 +549,7 @@ export class ShellSetupHandler extends BaseComponentHandler {
 
 // シェル実行（Dockerfile内）
 export class ShellDockerfileHandler extends BaseComponentHandler {
+  readonly isSingleUse = false;
   handle(component: Component | SimpleComponent): ComponentResult {
     if (typeof component === "string") {
       throw new Error("shell.dockerfile requires parameters");
@@ -563,6 +577,7 @@ export class ShellDockerfileHandler extends BaseComponentHandler {
 
 // シェル実行（postCreateCommand）
 export class ShellPostCreateHandler extends BaseComponentHandler {
+  readonly isSingleUse = false;
   handle(component: Component | SimpleComponent): ComponentResult {
     if (typeof component === "string") {
       throw new Error("shell.post-create requires parameters");

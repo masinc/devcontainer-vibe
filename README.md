@@ -52,20 +52,80 @@ deno task test
       "params": {
         "packages": ["deno@latest", "node@lts"]
       }
+    },
+    {
+      "name": "shell.post-create",
+      "params": {
+        "user": "vscode",
+        "commands": ["echo 'Setup complete!'", "npm install -g typescript"]
+      }
     }
   ]
 }
 ```
 
+### Advanced Shell Post-Create Usage
+
+The `shell.post-create` component supports multiple instances and user-specific script generation:
+
+```json
+{
+  "components": [
+    {
+      "name": "shell.post-create",
+      "params": {
+        "user": "vscode",
+        "commands": ["npm install", "git config --global user.name 'Dev User'"]
+      }
+    },
+    {
+      "name": "shell.post-create",
+      "params": {
+        "user": "root",
+        "commands": ["systemctl enable docker", "service nginx start"]
+      }
+    },
+    {
+      "name": "shell.post-create",
+      "params": {
+        "user": "vscode",
+        "commands": ["code --install-extension ms-python.python"]
+      }
+    }
+  ]
+}
+```
+
+This generates separate script files:
+- `shell-post-create-vscode.sh` - Combined vscode user commands
+- `shell-post-create-root.sh` - Root user commands
+- Execution: `vscode script && sudo root script`
+
 ## Available Components
 
-- `apt.install` - System packages
-- `mise.setup` / `mise.install` - Runtime management
-- `nix.setup` / `nix.install` - Nix packages with Home Manager
-- `firewall.setup` / `firewall.domain` / `firewall.github-api` - Security
-- `vscode.install` - VS Code extensions
-- `shell.setup` - Shell configuration
-- `sudo.disable` - Security hardening
+### Package Management
+- `apt.install` - System packages (multiple use allowed)
+- `mise.setup` - Runtime management setup (single use only)
+- `mise.install` - Runtime packages (multiple use allowed)
+- `nix.setup` - Nix with Home Manager setup (single use only)
+- `nix.install` - Nix packages (multiple use allowed)
+
+### Security & Firewall
+- `firewall.setup` - Basic firewall setup with ipset (single use only)
+- `firewall.domain` - Domain-based firewall rules (multiple use allowed)
+- `firewall.github-api` - GitHub API IP ranges (single use only)
+- `sudo.disable` - Security hardening (single use only)
+
+### Development Environment
+- `vscode.install` - VS Code extensions (multiple use allowed)
+- `shell.setup` - Shell configuration (single use only)
+- `shell.dockerfile` - Custom shell commands in Dockerfile (multiple use allowed)
+- `shell.post-create` - Custom shell commands after container creation (multiple use allowed)
+
+### Component Usage Rules
+- **Single use only**: Setup components can only be used once per configuration
+- **Multiple use allowed**: Install and command components can be used multiple times
+- **Automatic merging**: Multiple uses of the same component are automatically merged
 
 ## Documentation
 

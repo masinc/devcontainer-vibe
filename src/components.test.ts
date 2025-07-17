@@ -240,7 +240,7 @@ Deno.test("FirewallSetupHandler - valid component", () => {
   const handler = new FirewallSetupHandler();
   const result = handler.handle("firewall.setup");
 
-  assertEquals(result.dockerfileLines.length, 6);
+  assertEquals(result.dockerfileLines.length, 4);
   assertEquals(result.dockerfileLines[0], "USER root");
   assertEquals(
     result.dockerfileLines[1],
@@ -252,15 +252,7 @@ Deno.test("FirewallSetupHandler - valid component", () => {
   );
   assertEquals(
     result.dockerfileLines[3],
-    "    apt-get update && apt-get install -y iptables",
-  );
-  assertEquals(
-    result.dockerfileLines[4],
-    "RUN echo 'vscode ALL=(root) NOPASSWD:ALL' > /etc/sudoers.d/vscode && \\",
-  );
-  assertEquals(
-    result.dockerfileLines[5],
-    "    chmod 0440 /etc/sudoers.d/vscode",
+    "    apt-get update && apt-get install -y iptables ipset dnsutils curl jq",
   );
   
   // Check devcontainer config for required capabilities
@@ -285,9 +277,7 @@ Deno.test("FirewallDomainHandler - with presets", () => {
 
   const result = handler.handle(component);
 
-  assertEquals(result.dockerfileLines.length, 6);
-  assertEquals(result.dockerfileLines[0], "USER root");
-  assertEquals(result.dockerfileLines[3], "    apt-get update && apt-get install -y dnsutils");
+  assertEquals(result.dockerfileLines.length, 0);
   assertEquals(Object.keys(result.scripts).length, 1);
   assertEquals("firewall-domain.sh" in result.scripts, true);
   assertEquals(
@@ -311,9 +301,7 @@ Deno.test("FirewallDomainHandler - with allows", () => {
 
   const result = handler.handle(component);
 
-  assertEquals(result.dockerfileLines.length, 6);
-  assertEquals(result.dockerfileLines[0], "USER root");
-  assertEquals(result.dockerfileLines[3], "    apt-get update && apt-get install -y dnsutils");
+  assertEquals(result.dockerfileLines.length, 0);
   assertEquals(Object.keys(result.scripts).length, 1);
   assertEquals(
     result.scripts["firewall-domain.sh"].includes("example.com"),
@@ -430,9 +418,7 @@ Deno.test("FirewallGithubApiHandler - valid component", () => {
   const handler = new FirewallGithubApiHandler();
   const result = handler.handle("firewall.github-api");
 
-  assertEquals(result.dockerfileLines.length, 6);
-  assertEquals(result.dockerfileLines[0], "USER root");
-  assertEquals(result.dockerfileLines[3], "    apt-get update && apt-get install -y curl jq");
+  assertEquals(result.dockerfileLines.length, 0);
   assertEquals(Object.keys(result.devcontainerConfig).length, 0);
   assertEquals(Object.keys(result.scripts).length, 1);
   assertEquals("firewall-github-dynamic.sh" in result.scripts, true);

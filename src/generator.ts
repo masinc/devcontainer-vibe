@@ -35,12 +35,40 @@ export class DevcontainerGenerator {
     const allDockerfileLines: string[] = [];
     const allDevcontainerConfig: Record<string, unknown> = {};
     const allScripts: Record<string, string> = {};
+    
+    // 単一利用のみ許可するコンポーネントの追跡
+    const singleUseComponents = new Set<string>();
+    
+    // shell.post-create の複数回対応
+    const postCreateCommands: Array<{user: string, commands: string[]}> = [];
 
     for (const component of config.components) {
       const componentType = typeof component === "string"
         ? component
         : component.name;
+        
+      // コンポーネントハンドラーを取得
       const handler = this.handlerFactory.getHandler(componentType);
+      
+      // 単一利用チェック
+      if (handler.isSingleUse) {
+        if (singleUseComponents.has(componentType)) {
+          throw new Error(`Component '${componentType}' can only be used once`);
+        }
+        singleUseComponents.add(componentType);
+      }
+      
+      // shell.post-create の特別処理
+      if (componentType === "shell.post-create") {
+        if (typeof component !== "string" && component.name === "shell.post-create") {
+          postCreateCommands.push({
+            user: component.params.user,
+            commands: component.params.commands
+          });
+        }
+        continue;
+      }
+      
       const result = handler.handle(component);
 
       // Dockerfileにコンポーネントコメントを追加
@@ -53,12 +81,65 @@ export class DevcontainerGenerator {
       this.mergeConfig(allDevcontainerConfig, result.devcontainerConfig);
       Object.assign(allScripts, result.scripts);
     }
+    
+    // shell.post-create の統合処理
+    if (postCreateCommands.length > 0) {
+      this.mergePostCreateCommands(postCreateCommands, allDevcontainerConfig, allScripts);
+    }
 
     return {
       dockerfileLines: allDockerfileLines,
       devcontainerConfig: allDevcontainerConfig,
       scripts: allScripts,
     };
+  }
+
+  private mergePostCreateCommands(
+    postCreateCommands: Array<{user: string, commands: string[]}>,
+    allDevcontainerConfig: Record<string, unknown>,
+    allScripts: Record<string, string>
+  ): void {
+    // userごとにコマンドをグループ化
+    const userGroups = new Map<string, string[]>();
+    
+    for (const {user, commands} of postCreateCommands) {
+      if (!userGroups.has(user)) {
+        userGroups.set(user, []);
+      }
+      userGroups.get(user)!.push(...commands);
+    }
+    
+    // 実行コマンドを格納する配列
+    const execCommands: string[] = [];
+    
+    // vscodユーザーのスクリプトを作成
+    if (userGroups.has("vscode")) {
+      const vscodCommands = userGroups.get("vscode")!;
+      const vscodScript = `#!/bin/bash
+set -ex
+
+# Commands for vscode user
+${vscodCommands.join("\n")}
+`;
+      allScripts["shell-post-create-vscode.sh"] = vscodScript;
+      execCommands.push("/usr/local/scripts/shell-post-create-vscode.sh");
+    }
+    
+    // rootユーザーのスクリプトを作成
+    if (userGroups.has("root")) {
+      const rootCommands = userGroups.get("root")!;
+      const rootScript = `#!/bin/bash
+set -ex
+
+# Commands for root user
+${rootCommands.join("\n")}
+`;
+      allScripts["shell-post-create-root.sh"] = rootScript;
+      execCommands.push("sudo /usr/local/scripts/shell-post-create-root.sh");
+    }
+    
+    // 実行コマンドを結合
+    allDevcontainerConfig.postCreateCommand = execCommands.join(" && ");
   }
 
   private mergeConfig(
@@ -101,13 +182,8 @@ export class DevcontainerGenerator {
         }
         target[key] = targetEnv;
       } else if (key === "postCreateCommand" && typeof value === "string") {
-        // postCreateCommandは文字列結合でマージ
-        const targetCommand = target[key] as string || "";
-        if (targetCommand) {
-          target[key] = `${targetCommand} && ${value}`;
-        } else {
-          target[key] = value;
-        }
+        // postCreateCommandは上書きする（shell.post-createが優先）
+        target[key] = value;
       } else if (Array.isArray(value)) {
         const targetArray = target[key] as unknown[] || [];
         const newArray = targetArray.concat(value);
@@ -196,10 +272,11 @@ USER vscode
     };
 
     // 実行可能なスクリプトがある場合はpostCreateCommandを追加
+    // ただし、shell.post-create由来のpostCreateCommandがある場合は上書きしない
     const executableScripts = Object.keys(scripts).filter(filename => 
       filename.endsWith('.sh') || filename.endsWith('.py') || filename.endsWith('.js') || filename.endsWith('.ts')
     );
-    if (executableScripts.length > 0) {
+    if (executableScripts.length > 0 && !additionalConfig.postCreateCommand) {
       const scriptCommands = executableScripts.map(filename => 
         `/usr/local/scripts/${filename}`
       ).join(" && ");

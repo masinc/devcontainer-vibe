@@ -39,14 +39,14 @@ deno task test
   "description": "My development environment",
   "components": [
     {
-      "name": "apt.install",
+      "component": "apt.install",
       "params": {
         "packages": ["git", "curl", "ripgrep"]
       }
     },
     "mise.setup",
     {
-      "name": "mise.install",
+      "component": "mise.install",
       "params": {
         "packages": ["deno@latest", "node@lts"]
       }
@@ -57,13 +57,29 @@ deno task test
 
 ## 利用可能なコンポーネント
 
-- `apt.install` - システムパッケージ
-- `mise.setup` / `mise.install` - ランタイム管理
-- `nix.setup` / `nix.install` - Home Manager対応Nixパッケージ
-- `firewall.setup` / `firewall.domain` / `firewall.github-api` - セキュリティ
-- `vscode.install` - VS Code拡張機能
-- `shell.setup` - シェル設定
-- `sudo.disable` - セキュリティ強化
+### パッケージ管理
+- `apt.install` - システムパッケージ（複数利用可能）
+- `mise.setup` - ランタイム管理設定（単一利用のみ）
+- `mise.install` - ランタイムパッケージ（複数利用可能）
+- `nix.setup` - Home Manager対応Nixセットアップ（単一利用のみ）
+- `nix.install` - Nixパッケージ（複数利用可能）
+
+### セキュリティ & ファイアウォール
+- `firewall.setup` - ipset対応基本ファイアウォール設定（単一利用のみ）
+- `firewall.domain` - ドメインベースファイアウォールルール（複数利用可能）
+- `firewall.github-api` - GitHub API IP範囲（単一利用のみ）
+- `sudo.disable` - セキュリティ強化（単一利用のみ）
+
+### 開発環境
+- `vscode.install` - VS Code拡張機能（複数利用可能）
+- `shell.setup` - シェル設定（単一利用のみ）
+- `shell.dockerfile` - Docker内でのシェルコマンド（複数利用可能）
+- `shell.post-create` - コンテナー作成後のシェルコマンド（複数利用可能）
+
+### コンポーネント使用ルール
+- **単一利用のみ**: セットアップコンポーネントは設定ごとに一度だけ使用可能
+- **複数利用可能**: インストールとコマンドコンポーネントは複数回使用可能
+- **自動マージ**: 同じコンポーネントの複数回使用は自動的にマージされる
 
 ## ドキュメント
 

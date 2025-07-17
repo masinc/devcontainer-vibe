@@ -62,15 +62,22 @@ Components can be either:
 
 ## Component Types
 
+### Component Usage Rules
+
+Components are categorized into two types:
+
+- **Single Use Components**: Can only be used once per configuration. Attempting to use them multiple times will result in an error.
+- **Multiple Use Components**: Can be used multiple times and are automatically merged.
+
 ### 1. System Package Installation
 
-#### `apt.install`
+#### `apt.install` (Multiple Use)
 
 Installs system packages using the APT package manager.
 
 ```json
 {
-  "component": "apt.install",
+  "name": "apt.install",
   "params": {
     "packages": ["git", "curl", "ripgrep", "fd-find", "iptables"]
   }
@@ -80,6 +87,9 @@ Installs system packages using the APT package manager.
 **Parameters:**
 
 - `packages` (array of strings): List of APT package names to install
+
+**Multiple Use Behavior:**
+Multiple `apt.install` components are automatically merged into separate install commands.
 
 **Generated Docker Commands:**
 
@@ -91,7 +101,7 @@ RUN apt-get update && apt-get install -y \
 
 ### 2. Runtime Management (mise)
 
-#### `mise.setup`
+#### `mise.setup` (Single Use)
 
 Installs the mise runtime version manager.
 
@@ -101,20 +111,15 @@ Installs the mise runtime version manager.
 
 **Parameters:** None
 
-**Generated Docker Commands:**
+**Single Use:** Can only be used once per configuration.
 
-```dockerfile
-RUN curl https://mise.run | sh
-ENV PATH="/root/.local/bin:$PATH"
-```
-
-#### `mise.install`
+#### `mise.install` (Multiple Use)
 
 Installs language runtimes using mise.
 
 ```json
 {
-  "component": "mise.install",
+  "name": "mise.install",
   "params": {
     "packages": ["deno@latest", "node@lts", "python@3.12"]
   }
@@ -126,12 +131,17 @@ Installs language runtimes using mise.
 - `packages` (array of strings): List of runtime specifications in format
   `tool@version`
 
+**Multiple Use Behavior:**
+Multiple `mise.install` components are merged into a single installation command.
+
 **Generated Docker Commands:**
 
 ```dockerfile
-RUN mise use -g deno@latest
-RUN mise use -g node@lts
-RUN mise use -g python@3.12
+USER vscode
+RUN mise use -g deno@latest && \
+    mise use -g node@lts && \
+    mise use -g python@3.12 && \
+    mise install
 ```
 
 ### 3. Package Management (Nix)
@@ -416,9 +426,9 @@ Group related components together:
     // Security configuration
     "firewall.setup",
     {
-      "component": "firewall.domains",
+      "component": "firewall.domain",
       "params": {
-        "domains": ["github.com", "deno.land"]
+        "allows": ["github.com", "deno.land"]
       }
     },
 
@@ -609,9 +619,9 @@ The configuration is validated using Zod schemas. Common validation errors:
     },
     "firewall.setup",
     {
-      "component": "firewall.domains",
+      "component": "firewall.domain",
       "params": {
-        "domains": [
+        "allows": [
           "github.com",
           "deno.land",
           "jsr.io",
@@ -655,9 +665,9 @@ The configuration is validated using Zod schemas. Common validation errors:
     },
     "firewall.setup",
     {
-      "component": "firewall.domains",
+      "component": "firewall.domain",
       "params": {
-        "domains": [
+        "allows": [
           "github.com",
           "api.github.com",
           "deno.land",
