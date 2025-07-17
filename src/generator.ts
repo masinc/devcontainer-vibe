@@ -1,5 +1,5 @@
 import { type DevcontainerConfig, DevcontainerConfigSchema } from "./types.ts";
-import { ComponentHandlerFactory } from "./components/index.ts";
+import { ComponentHandlerFactory } from "./components/factory.ts";
 import { ensureDir, exists } from "@std/fs";
 import { join } from "@std/path";
 
