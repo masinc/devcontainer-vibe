@@ -66,7 +66,8 @@ deno task test
 
 ### Advanced Shell Post-Create Usage
 
-The `shell.post-create` component supports multiple instances and user-specific script generation:
+The `shell.post-create` component supports multiple instances and user-specific
+script generation:
 
 ```json
 {
@@ -97,6 +98,7 @@ The `shell.post-create` component supports multiple instances and user-specific 
 ```
 
 This generates separate script files:
+
 - `shell-post-create-vscode.sh` - Combined vscode user commands
 - `shell-post-create-root.sh` - Root user commands
 - Execution: `vscode script && sudo root script`
@@ -104,6 +106,7 @@ This generates separate script files:
 ## Available Components
 
 ### Package Management
+
 - `apt.install` - System packages (multiple use allowed)
 - `mise.setup` - Runtime management setup (single use only)
 - `mise.install` - Runtime packages (multiple use allowed)
@@ -111,21 +114,28 @@ This generates separate script files:
 - `nix.install` - Nix packages (multiple use allowed)
 
 ### Security & Firewall
+
 - `firewall.setup` - Basic firewall setup with ipset (single use only)
 - `firewall.domain` - Domain-based firewall rules (multiple use allowed)
 - `firewall.github-api` - GitHub API IP ranges (single use only)
 - `sudo.disable` - Security hardening (single use only)
 
 ### Development Environment
+
 - `vscode.install` - VS Code extensions (multiple use allowed)
 - `shell.setup` - Shell configuration (single use only)
-- `shell.dockerfile` - Custom shell commands in Dockerfile (multiple use allowed)
-- `shell.post-create` - Custom shell commands after container creation (multiple use allowed)
+- `shell.dockerfile` - Custom shell commands in Dockerfile (multiple use
+  allowed)
+- `shell.post-create` - Custom shell commands after container creation (multiple
+  use allowed)
 
 ### Component Usage Rules
+
 - **Single use only**: Setup components can only be used once per configuration
-- **Multiple use allowed**: Install and command components can be used multiple times
-- **Automatic merging**: Multiple uses of the same component are automatically merged
+- **Multiple use allowed**: Install and command components can be used multiple
+  times
+- **Automatic merging**: Multiple uses of the same component are automatically
+  merged
 
 ## Documentation
 

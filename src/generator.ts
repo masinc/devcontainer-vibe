@@ -1,5 +1,5 @@
 import { type DevcontainerConfig, DevcontainerConfigSchema } from "./types.ts";
-import { ComponentHandlerFactory } from "./components.ts";
+import { ComponentHandlerFactory } from "./components/index.ts";
 import { ensureDir, exists } from "@std/fs";
 import { join } from "@std/path";
 
@@ -9,7 +9,7 @@ export class DevcontainerGenerator {
   async generate(configPath: string, outputDir: string): Promise<void> {
     // .devcontainer ディレクトリのパスを作成
     const devcontainerDir = join(outputDir, ".devcontainer");
-    
+
     // 出力ディレクトリの存在確認（テスト環境では無視）
     if (await exists(devcontainerDir) && !outputDir.includes("/tmp/")) {
       throw new Error(
@@ -35,21 +35,21 @@ export class DevcontainerGenerator {
     const allDockerfileLines: string[] = [];
     const allDevcontainerConfig: Record<string, unknown> = {};
     const allScripts: Record<string, string> = {};
-    
+
     // 単一利用のみ許可するコンポーネントの追跡
     const singleUseComponents = new Set<string>();
-    
+
     // shell.post-create の複数回対応
-    const postCreateCommands: Array<{user: string, commands: string[]}> = [];
+    const postCreateCommands: Array<{ user: string; commands: string[] }> = [];
 
     for (const component of config.components) {
       const componentType = typeof component === "string"
         ? component
         : component.name;
-        
+
       // コンポーネントハンドラーを取得
       const handler = this.handlerFactory.getHandler(componentType);
-      
+
       // 単一利用チェック
       if (handler.isSingleUse) {
         if (singleUseComponents.has(componentType)) {
@@ -57,18 +57,21 @@ export class DevcontainerGenerator {
         }
         singleUseComponents.add(componentType);
       }
-      
+
       // shell.post-create の特別処理
       if (componentType === "shell.post-create") {
-        if (typeof component !== "string" && component.name === "shell.post-create") {
+        if (
+          typeof component !== "string" &&
+          component.name === "shell.post-create"
+        ) {
           postCreateCommands.push({
             user: component.params.user,
-            commands: component.params.commands
+            commands: component.params.commands,
           });
         }
         continue;
       }
-      
+
       const result = handler.handle(component);
 
       // Dockerfileにコンポーネントコメントを追加
@@ -77,14 +80,18 @@ export class DevcontainerGenerator {
         allDockerfileLines.push(...result.dockerfileLines);
         allDockerfileLines.push(""); // 空行を追加して区切り
       }
-      
+
       this.mergeConfig(allDevcontainerConfig, result.devcontainerConfig);
       Object.assign(allScripts, result.scripts);
     }
-    
+
     // shell.post-create の統合処理
     if (postCreateCommands.length > 0) {
-      this.mergePostCreateCommands(postCreateCommands, allDevcontainerConfig, allScripts);
+      this.mergePostCreateCommands(
+        postCreateCommands,
+        allDevcontainerConfig,
+        allScripts,
+      );
     }
 
     return {
@@ -95,23 +102,23 @@ export class DevcontainerGenerator {
   }
 
   private mergePostCreateCommands(
-    postCreateCommands: Array<{user: string, commands: string[]}>,
+    postCreateCommands: Array<{ user: string; commands: string[] }>,
     allDevcontainerConfig: Record<string, unknown>,
-    allScripts: Record<string, string>
+    allScripts: Record<string, string>,
   ): void {
     // userごとにコマンドをグループ化
     const userGroups = new Map<string, string[]>();
-    
-    for (const {user, commands} of postCreateCommands) {
+
+    for (const { user, commands } of postCreateCommands) {
       if (!userGroups.has(user)) {
         userGroups.set(user, []);
       }
       userGroups.get(user)!.push(...commands);
     }
-    
+
     // 実行コマンドを格納する配列
     const execCommands: string[] = [];
-    
+
     // vscodユーザーのスクリプトを作成
     if (userGroups.has("vscode")) {
       const vscodCommands = userGroups.get("vscode")!;
@@ -124,7 +131,7 @@ ${vscodCommands.join("\n")}
       allScripts["shell-post-create-vscode.sh"] = vscodScript;
       execCommands.push("/usr/local/scripts/shell-post-create-vscode.sh");
     }
-    
+
     // rootユーザーのスクリプトを作成
     if (userGroups.has("root")) {
       const rootCommands = userGroups.get("root")!;
@@ -137,7 +144,7 @@ ${rootCommands.join("\n")}
       allScripts["shell-post-create-root.sh"] = rootScript;
       execCommands.push("sudo /usr/local/scripts/shell-post-create-root.sh");
     }
-    
+
     // 実行コマンドを結合
     allDevcontainerConfig.postCreateCommand = execCommands.join(" && ");
   }
@@ -157,7 +164,7 @@ ${rootCommands.join("\n")}
         // remoteEnvは文字列結合でマージ
         const targetEnv = target[key] as Record<string, string> || {};
         const sourceEnv = value as Record<string, string>;
-        
+
         for (const [envKey, envValue] of Object.entries(sourceEnv)) {
           if (targetEnv[envKey]) {
             // 既存の値がある場合は文字列結合
@@ -166,14 +173,14 @@ ${rootCommands.join("\n")}
               .replace("$" + envKey, targetEnv[envKey])
               .replace("${" + envKey + "}", targetEnv[envKey])
               .replace("${containerEnv:" + envKey + "}", targetEnv[envKey]);
-            
+
             // PATH の重複を削除
             if (envKey === "PATH") {
               const pathParts = mergedValue.split(":");
               const uniquePaths = [...new Set(pathParts)];
               mergedValue = uniquePaths.join(":");
             }
-            
+
             targetEnv[envKey] = mergedValue;
           } else {
             // 新規の場合はそのまま設定
@@ -214,7 +221,10 @@ ${rootCommands.join("\n")}
     await ensureDir(outputDir);
 
     // Dockerfile生成
-    const dockerfile = this.generateDockerfile(results.dockerfileLines, results.scripts);
+    const dockerfile = this.generateDockerfile(
+      results.dockerfileLines,
+      results.scripts,
+    );
     await Deno.writeTextFile(join(outputDir, "Dockerfile"), dockerfile);
 
     // devcontainer.json生成
@@ -241,8 +251,11 @@ ${rootCommands.join("\n")}
     }
   }
 
-  private generateDockerfile(lines: string[], scripts: Record<string, string>): string {
-    const scriptCopyLines = Object.keys(scripts).length > 0 
+  private generateDockerfile(
+    lines: string[],
+    scripts: Record<string, string>,
+  ): string {
+    const scriptCopyLines = Object.keys(scripts).length > 0
       ? "COPY scripts/ /usr/local/scripts/\nRUN chmod +x /usr/local/scripts/*\n\n"
       : "";
 
@@ -273,11 +286,12 @@ USER vscode
 
     // 実行可能なスクリプトがある場合はpostCreateCommandを追加
     // ただし、shell.post-create由来のpostCreateCommandがある場合は上書きしない
-    const executableScripts = Object.keys(scripts).filter(filename => 
-      filename.endsWith('.sh') || filename.endsWith('.py') || filename.endsWith('.js') || filename.endsWith('.ts')
+    const executableScripts = Object.keys(scripts).filter((filename) =>
+      filename.endsWith(".sh") || filename.endsWith(".py") ||
+      filename.endsWith(".js") || filename.endsWith(".ts")
     );
     if (executableScripts.length > 0 && !additionalConfig.postCreateCommand) {
-      const scriptCommands = executableScripts.map(filename => 
+      const scriptCommands = executableScripts.map((filename) =>
         `/usr/local/scripts/${filename}`
       ).join(" && ");
       baseConfig.postCreateCommand = scriptCommands;

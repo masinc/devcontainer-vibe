@@ -29,10 +29,10 @@ components of your devcontainer environment. Here's the basic structure:
 
 ### Root Properties
 
-| Property      | Type     | Required | Description                              |
-| ------------- | -------- | -------- | ---------------------------------------- |
-| `name`        | `string` | ✅       | The name of the devcontainer environment |
-| `components`  | `array`  | ✅       | Array of components to install/configure |
+| Property     | Type     | Required | Description                              |
+| ------------ | -------- | -------- | ---------------------------------------- |
+| `name`       | `string` | ✅       | The name of the devcontainer environment |
+| `components` | `array`  | ✅       | Array of components to install/configure |
 
 ## Configuration Schema
 
@@ -66,8 +66,10 @@ Components can be either:
 
 Components are categorized into two types:
 
-- **Single Use Components**: Can only be used once per configuration. Attempting to use them multiple times will result in an error.
-- **Multiple Use Components**: Can be used multiple times and are automatically merged.
+- **Single Use Components**: Can only be used once per configuration. Attempting
+  to use them multiple times will result in an error.
+- **Multiple Use Components**: Can be used multiple times and are automatically
+  merged.
 
 ### 1. System Package Installation
 
@@ -88,8 +90,8 @@ Installs system packages using the APT package manager.
 
 - `packages` (array of strings): List of APT package names to install
 
-**Multiple Use Behavior:**
-Multiple `apt.install` components are automatically merged into separate install commands.
+**Multiple Use Behavior:** Multiple `apt.install` components are automatically
+merged into separate install commands.
 
 **Generated Docker Commands:**
 
@@ -131,8 +133,8 @@ Installs language runtimes using mise.
 - `packages` (array of strings): List of runtime specifications in format
   `tool@version`
 
-**Multiple Use Behavior:**
-Multiple `mise.install` components are merged into a single installation command.
+**Multiple Use Behavior:** Multiple `mise.install` components are merged into a
+single installation command.
 
 **Generated Docker Commands:**
 
@@ -218,7 +220,8 @@ Configures firewall to allow specific domains using presets or custom allows.
 
 **Parameters:**
 
-- `presets` (array of strings, optional): Predefined domain sets (github, deno, npm, nix, etc.)
+- `presets` (array of strings, optional): Predefined domain sets (github, deno,
+  npm, nix, etc.)
 - `allows` (array of strings, optional): Custom domain names to allow
 
 **Generated Files:**

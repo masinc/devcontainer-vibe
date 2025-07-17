@@ -9,7 +9,9 @@ Deno.test("DevcontainerGenerator - generate creates correct Dockerfile", async (
   try {
     await generator.generate("examples/minimal.json", tempDir);
 
-    const dockerfile = await Deno.readTextFile(join(tempDir, ".devcontainer", "Dockerfile"));
+    const dockerfile = await Deno.readTextFile(
+      join(tempDir, ".devcontainer", "Dockerfile"),
+    );
 
     // Check basic structure
     assertEquals(
@@ -47,7 +49,10 @@ Deno.test("DevcontainerGenerator - generate creates correct devcontainer.json", 
     assertEquals(devcontainer.remoteUser, "vscode");
 
     // Check environment variables
-    assertEquals(devcontainer.remoteEnv.MISE_DATA_DIR, "/home/vscode/.local/share/mise");
+    assertEquals(
+      devcontainer.remoteEnv.MISE_DATA_DIR,
+      "/home/vscode/.local/share/mise",
+    );
     assertEquals(devcontainer.remoteEnv.PATH.includes("mise/shims"), true);
   } finally {
     await Deno.remove(tempDir, { recursive: true });
@@ -89,7 +94,6 @@ Deno.test("DevcontainerGenerator - generate creates scripts when needed", async 
     await Deno.remove(tempDir, { recursive: true });
   }
 });
-
 
 Deno.test("DevcontainerGenerator - mergeConfig handles arrays", async () => {
   const generator = new DevcontainerGenerator();
@@ -199,7 +203,10 @@ Deno.test("DevcontainerGenerator - prevents duplicate setup components", async (
       await generator.generate(configPath, join(tempDir, "output"));
       throw new Error("Should have thrown duplicate component error");
     } catch (error) {
-      assertEquals((error as Error).message, "Component 'mise.setup' can only be used once");
+      assertEquals(
+        (error as Error).message,
+        "Component 'mise.setup' can only be used once",
+      );
     }
   } finally {
     await Deno.remove(tempDir, { recursive: true });
@@ -243,20 +250,43 @@ Deno.test("DevcontainerGenerator - merges multiple shell.post-create components"
 
     await generator.generate(configPath, join(tempDir, "output"));
 
-    const vscodScript = await Deno.readTextFile(join(tempDir, "output", ".devcontainer", "scripts", "shell-post-create-vscode.sh"));
-    const rootScript = await Deno.readTextFile(join(tempDir, "output", ".devcontainer", "scripts", "shell-post-create-root.sh"));
-    const devcontainerJson = JSON.parse(await Deno.readTextFile(join(tempDir, "output", ".devcontainer", "devcontainer.json")));
+    const vscodScript = await Deno.readTextFile(
+      join(
+        tempDir,
+        "output",
+        ".devcontainer",
+        "scripts",
+        "shell-post-create-vscode.sh",
+      ),
+    );
+    const rootScript = await Deno.readTextFile(
+      join(
+        tempDir,
+        "output",
+        ".devcontainer",
+        "scripts",
+        "shell-post-create-root.sh",
+      ),
+    );
+    const devcontainerJson = JSON.parse(
+      await Deno.readTextFile(
+        join(tempDir, "output", ".devcontainer", "devcontainer.json"),
+      ),
+    );
 
     // vscodスクリプトに該当するコマンドが含まれることを確認
     assertEquals(vscodScript.includes("echo 'first command'"), true);
     assertEquals(vscodScript.includes("npm install"), true);
     assertEquals(vscodScript.includes("echo 'second vscode command'"), true);
-    
+
     // rootスクリプトに該当するコマンドが含まれることを確認
     assertEquals(rootScript.includes("echo 'root command'"), true);
-    
+
     // 実行コマンドが正しく設定されることを確認
-    assertEquals(devcontainerJson.postCreateCommand, "/usr/local/scripts/shell-post-create-vscode.sh && sudo /usr/local/scripts/shell-post-create-root.sh");
+    assertEquals(
+      devcontainerJson.postCreateCommand,
+      "/usr/local/scripts/shell-post-create-vscode.sh && sudo /usr/local/scripts/shell-post-create-root.sh",
+    );
   } finally {
     await Deno.remove(tempDir, { recursive: true });
   }

@@ -11,7 +11,7 @@ Deno.test("FIREWALL_PRESETS - should contain expected presets", () => {
   assertEquals(typeof FIREWALL_PRESETS.npm, "object");
   assertEquals(typeof FIREWALL_PRESETS.deno, "object");
   assertEquals(typeof FIREWALL_PRESETS.vscode, "object");
-  assertEquals(typeof FIREWALL_PRESETS.anthropic, "object");
+  assertEquals(typeof FIREWALL_PRESETS["claude-code"], "object");
   assertEquals(typeof FIREWALL_PRESETS.python, "object");
 
   // GitHub プリセットの内容をチェック
@@ -218,7 +218,6 @@ Deno.test("DevcontainerConfigSchema - valid config", () => {
     assertEquals(result.data.components.length, 2);
   }
 });
-
 
 Deno.test("DevcontainerConfigSchema - missing name should fail", () => {
   const invalidConfig = {
