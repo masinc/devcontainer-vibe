@@ -2,7 +2,6 @@
   "name": "security-only",
   "components": [
     "firewall.setup",
-    "firewall.github-api",
     {
       "name": "firewall.domain",
       "params": {
@@ -13,6 +12,7 @@
         ]
       }
     },
+    "firewall.github-api",
     "sudo.disable"
   ]
 }

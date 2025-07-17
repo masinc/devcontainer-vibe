@@ -21,7 +21,7 @@ Deno.test("DevcontainerGenerator - generate creates correct Dockerfile", async (
 
     // Check specific commands from minimal config
     assertEquals(dockerfile.includes("apt install -y mise"), true);
-    assertEquals(dockerfile.includes("mise use -g deno@2"), true);
+    assertEquals(dockerfile.includes("mise use -g node@24"), true);
     assertEquals(dockerfile.includes("nix-shell '<home-manager>'"), true);
   } finally {
     await Deno.remove(tempDir, { recursive: true });

@@ -16,10 +16,13 @@ export const FIREWALL_PRESETS = {
     "npm.pkg.github.com",
     "npmjs.com",
   ],
-  anthropic: [
+  "claude-code": [
     "api.anthropic.com",
     "claude.ai",
     "console.anthropic.com",
+    "sentry.io",
+    "statsig.anthropic.com",
+    "statsig.com",
   ],
   nix: [
     "cache.nixos.org",

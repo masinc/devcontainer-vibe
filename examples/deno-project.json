@@ -48,17 +48,25 @@
         ]
       }
     },
-    "firewall.github-api",
     {
       "name": "firewall.domain",
       "params": {
         "presets": [
           "github",
           "deno",
-          "npm"
+          "npm",
+          "nix",
+          "claude-code"
+        ],
+        "allows": [
+          "mcp.context7.com",
+          "context7.com",
+          "mcp.deepwiki.com",
+          "deepwiki.com"
         ]
       }
     },
+    "firewall.github-api",
     {
       "name": "shell.setup",
       "params": {
@@ -66,7 +74,16 @@
       }
     },
     {
-      "name": "sudo.disable"
-    }
+      "name": "shell.post-create",
+      "params": {
+        "user": "vscode",
+        "commands": [
+          "npm install -g @anthropic-ai/claude-code",
+          "claude mcp add --transport http context7 https://mcp.context7.com/mcp",
+          "claude mcp add --transport http deepwiki https://mcp.deepwiki.com/mcp"
+        ]
+      }
+    },
+    "sudo.disable"
   ]
 }

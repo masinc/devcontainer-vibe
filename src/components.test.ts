@@ -208,7 +208,7 @@ Deno.test("NixInstallHandler - valid component with Home-Manager", () => {
   assertEquals(result.dockerfileLines[2], "RUN cp /usr/local/scripts/home-manager-config.nix ~/.config/home-manager/home.nix");
   assertEquals(result.dockerfileLines[3], "# Apply Home Manager configuration");
   assertEquals(result.dockerfileLines[5], "    <<-EOS");
-  assertEquals(result.dockerfileLines[6], "    set -ex;");
+  assertEquals(result.dockerfileLines[6], "    set -uex;");
   assertEquals(result.dockerfileLines[7], "    export USER=vscode;");
   assertEquals(result.dockerfileLines[9], "    . ~/.nix-profile/etc/profile.d/nix.sh;");
   assertEquals(result.dockerfileLines[10], "    # Apply Home Manager configuration");
@@ -495,13 +495,16 @@ Deno.test("ShellDockerfileHandler - valid component", () => {
 
   const result = handler.handle(component);
 
-  assertEquals(result.dockerfileLines.length, 6);
+  assertEquals(result.dockerfileLines.length, 9);
   assertEquals(result.dockerfileLines[0], "USER vscode");
   assertEquals(result.dockerfileLines[1], "RUN <<-EOS");
-  assertEquals(result.dockerfileLines[2], "    set -ex;");
-  assertEquals(result.dockerfileLines[3], "    echo 'Hello World';");
-  assertEquals(result.dockerfileLines[4], "    ls -la;");
-  assertEquals(result.dockerfileLines[5], "EOS");
+  assertEquals(result.dockerfileLines[2], "    set -uex;");
+  assertEquals(result.dockerfileLines[3], "    # Source mise environment if available");
+  assertEquals(result.dockerfileLines[4], "    [ -f ~/.bashrc ] && source ~/.bashrc;");
+  assertEquals(result.dockerfileLines[5], "    export PATH=\"/home/vscode/.local/share/mise/shims:$PATH\";");
+  assertEquals(result.dockerfileLines[6], "    echo 'Hello World';");
+  assertEquals(result.dockerfileLines[7], "    ls -la;");
+  assertEquals(result.dockerfileLines[8], "EOS");
   assertEquals(Object.keys(result.devcontainerConfig).length, 0);
   assertEquals(Object.keys(result.scripts).length, 0);
 });
@@ -519,7 +522,7 @@ Deno.test("ShellDockerfileHandler - root user", () => {
   const result = handler.handle(component);
 
   assertEquals(result.dockerfileLines[0], "USER root");
-  assertEquals(result.dockerfileLines[3], "    apt-get update;");
+  assertEquals(result.dockerfileLines[6], "    apt-get update;");
 });
 
 Deno.test("ShellPostCreateHandler - valid component", () => {
