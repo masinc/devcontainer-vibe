@@ -6,7 +6,6 @@
       "name": "mise.install",
       "params": {
         "packages": [
-          "deno@2",
           "node@24"
         ]
       }
@@ -18,6 +17,15 @@
         "packages": [
           "ripgrep",
           "fd"
+        ]
+      }
+    },
+    {
+      "name": "shell.post-create",
+      "params": {
+        "user": "vscode",
+        "commands": [
+          "npm install -g @anthropic-ai/claude-code"
         ]
       }
     }

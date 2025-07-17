@@ -10,6 +10,8 @@ import {
   NixInstallHandler,
   NixSetupHandler,
   ShellSetupHandler,
+  ShellDockerfileHandler,
+  ShellPostCreateHandler,
   SudoDisableHandler,
   VscodeInstallHandler,
 } from "./components.ts";
@@ -470,6 +472,8 @@ Deno.test("ComponentHandlerFactory - get all handlers", () => {
     "sudo.disable",
     "vscode.install",
     "shell.setup",
+    "shell.dockerfile",
+    "shell.post-create",
   ];
 
   for (const handlerType of handlers) {
@@ -477,6 +481,90 @@ Deno.test("ComponentHandlerFactory - get all handlers", () => {
     assertEquals(typeof handler, "object");
     assertEquals(typeof handler.handle, "function");
   }
+});
+
+Deno.test("ShellDockerfileHandler - valid component", () => {
+  const handler = new ShellDockerfileHandler();
+  const component = {
+    name: "shell.dockerfile" as const,
+    params: {
+      user: "vscode" as const,
+      commands: ["echo 'Hello World'", "ls -la"],
+    },
+  };
+
+  const result = handler.handle(component);
+
+  assertEquals(result.dockerfileLines.length, 6);
+  assertEquals(result.dockerfileLines[0], "USER vscode");
+  assertEquals(result.dockerfileLines[1], "RUN <<-EOS");
+  assertEquals(result.dockerfileLines[2], "    set -ex;");
+  assertEquals(result.dockerfileLines[3], "    echo 'Hello World';");
+  assertEquals(result.dockerfileLines[4], "    ls -la;");
+  assertEquals(result.dockerfileLines[5], "EOS");
+  assertEquals(Object.keys(result.devcontainerConfig).length, 0);
+  assertEquals(Object.keys(result.scripts).length, 0);
+});
+
+Deno.test("ShellDockerfileHandler - root user", () => {
+  const handler = new ShellDockerfileHandler();
+  const component = {
+    name: "shell.dockerfile" as const,
+    params: {
+      user: "root" as const,
+      commands: ["apt-get update"],
+    },
+  };
+
+  const result = handler.handle(component);
+
+  assertEquals(result.dockerfileLines[0], "USER root");
+  assertEquals(result.dockerfileLines[3], "    apt-get update;");
+});
+
+Deno.test("ShellPostCreateHandler - valid component", () => {
+  const handler = new ShellPostCreateHandler();
+  const component = {
+    name: "shell.post-create" as const,
+    params: {
+      user: "vscode" as const,
+      commands: ["echo 'Setup complete'", "npm install"],
+    },
+  };
+
+  const result = handler.handle(component);
+
+  assertEquals(result.dockerfileLines.length, 0);
+  assertEquals(result.devcontainerConfig.postCreateCommand, "/usr/local/scripts/shell-post-create.sh");
+  assertEquals(Object.keys(result.scripts).length, 1);
+  assertEquals("shell-post-create.sh" in result.scripts, true);
+  assertEquals(
+    result.scripts["shell-post-create.sh"].includes("echo 'Setup complete'"),
+    true,
+  );
+  assertEquals(
+    result.scripts["shell-post-create.sh"].includes("npm install"),
+    true,
+  );
+});
+
+Deno.test("ShellPostCreateHandler - root user", () => {
+  const handler = new ShellPostCreateHandler();
+  const component = {
+    name: "shell.post-create" as const,
+    params: {
+      user: "root" as const,
+      commands: ["systemctl restart service"],
+    },
+  };
+
+  const result = handler.handle(component);
+
+  assertEquals(result.devcontainerConfig.postCreateCommand, "sudo /usr/local/scripts/shell-post-create.sh");
+  assertEquals(
+    result.scripts["shell-post-create.sh"].includes("# Running as root"),
+    true,
+  );
 });
 
 Deno.test("ComponentHandlerFactory - unknown handler should throw", () => {

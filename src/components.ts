@@ -148,7 +148,7 @@ export class NixSetupHandler extends BaseComponentHandler {
       "# Initialize Home Manager as vscode user with cache for package downloads",
       "RUN --mount=target=/tmp/nix-download-cache,type=cache,sharing=locked \\",
       "    <<-EOS",
-      "    set -ex;",
+      "    set -uex;",
       "    export USER=vscode;",
       "    # Source Nix environment for vscode user",
       "    . ~/.nix-profile/etc/profile.d/nix.sh;",
@@ -221,7 +221,7 @@ ${packageList}
       "# Apply Home Manager configuration",
       "RUN --mount=target=/tmp/nix-download-cache,type=cache,sharing=locked \\",
       "    <<-EOS",
-      "    set -ex;",
+      "    set -uex;",
       "    export USER=vscode;",
       "    # Source Nix environment for vscode user",
       "    . ~/.nix-profile/etc/profile.d/nix.sh;",
@@ -482,6 +482,71 @@ export class ShellSetupHandler extends BaseComponentHandler {
   }
 }
 
+// シェル実行（Dockerfile内）
+export class ShellDockerfileHandler extends BaseComponentHandler {
+  handle(component: Component | SimpleComponent): ComponentResult {
+    if (typeof component === "string") {
+      throw new Error("shell.dockerfile requires parameters");
+    }
+
+    if (component.name !== "shell.dockerfile") {
+      throw new Error("Invalid component type");
+    }
+
+    const { user, commands } = component.params;
+    const dockerfileLines = [
+      `USER ${user}`,
+      "RUN <<-EOS",
+      "    set -uex;",
+      "    # Source mise environment if available",
+      "    [ -f ~/.bashrc ] && source ~/.bashrc;",
+      "    export PATH=\"/home/vscode/.local/share/mise/shims:$PATH\";",
+      ...commands.map((cmd) => `    ${cmd};`),
+      "EOS",
+    ];
+
+    return this.createResult(dockerfileLines);
+  }
+}
+
+// シェル実行（postCreateCommand）
+export class ShellPostCreateHandler extends BaseComponentHandler {
+  handle(component: Component | SimpleComponent): ComponentResult {
+    if (typeof component === "string") {
+      throw new Error("shell.post-create requires parameters");
+    }
+
+    if (component.name !== "shell.post-create") {
+      throw new Error("Invalid component type");
+    }
+
+    const { user, commands } = component.params;
+
+    // スクリプトファイルを生成
+    const scriptContent = `#!/bin/bash
+set -ex
+
+# Switch to specified user if needed
+${user === "root" ? "# Running as root" : "# Running as vscode user"}
+
+${commands.map((cmd) => cmd).join("\n")}
+`;
+
+    const scripts = {
+      "shell-post-create.sh": scriptContent,
+    };
+
+    // postCreateCommandの設定
+    const devcontainerConfig = {
+      postCreateCommand: user === "root"
+        ? "sudo /usr/local/scripts/shell-post-create.sh"
+        : "/usr/local/scripts/shell-post-create.sh",
+    };
+
+    return this.createResult([], devcontainerConfig, scripts);
+  }
+}
+
 // コンポーネントハンドラーのファクトリー
 export class ComponentHandlerFactory {
   private handlers = new Map<string, ComponentHandler>([
@@ -496,6 +561,8 @@ export class ComponentHandlerFactory {
     ["sudo.disable", new SudoDisableHandler()],
     ["vscode.install", new VscodeInstallHandler()],
     ["shell.setup", new ShellSetupHandler()],
+    ["shell.dockerfile", new ShellDockerfileHandler()],
+    ["shell.post-create", new ShellPostCreateHandler()],
   ]);
 
   getHandler(componentType: string): ComponentHandler {

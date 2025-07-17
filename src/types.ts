@@ -148,6 +148,24 @@ export const ComponentSchema = z.discriminatedUnion("name", [
       shell: z.enum(["bash", "fish", "zsh"]),
     }),
   }),
+
+  // シェル実行（Dockerfile内）
+  z.object({
+    name: z.literal("shell.dockerfile"),
+    params: z.object({
+      user: z.enum(["root", "vscode"]),
+      commands: z.array(z.string()),
+    }),
+  }),
+
+  // シェル実行（postCreateCommand）
+  z.object({
+    name: z.literal("shell.post-create"),
+    params: z.object({
+      user: z.enum(["root", "vscode"]),
+      commands: z.array(z.string()),
+    }),
+  }),
 ]);
 
 // 文字列のみのコンポーネント（パラメータなし）

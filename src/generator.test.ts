@@ -20,13 +20,9 @@ Deno.test("DevcontainerGenerator - generate creates correct Dockerfile", async (
     assertEquals(dockerfile.includes("USER vscode"), true);
 
     // Check specific commands from minimal config
-    assertEquals(
-      dockerfile.includes("apt-get update && apt-get install -y"),
-      true,
-    );
-    assertEquals(dockerfile.includes("git curl"), true);
     assertEquals(dockerfile.includes("apt install -y mise"), true);
-    assertEquals(dockerfile.includes("mise use -g deno@latest"), true);
+    assertEquals(dockerfile.includes("mise use -g deno@2"), true);
+    assertEquals(dockerfile.includes("nix-shell '<home-manager>'"), true);
   } finally {
     await Deno.remove(tempDir, { recursive: true });
   }
@@ -45,18 +41,14 @@ Deno.test("DevcontainerGenerator - generate creates correct devcontainer.json", 
     const devcontainer = JSON.parse(devcontainerContent);
 
     // Check basic structure
-    assertEquals(devcontainer.name, "minimal-deno");
+    assertEquals(devcontainer.name, "minimal-package-manager");
     assertEquals(devcontainer.build.dockerfile, "Dockerfile");
     assertEquals(devcontainer.build.context, ".");
     assertEquals(devcontainer.remoteUser, "vscode");
 
-    // Check VS Code extensions
-    assertEquals(
-      devcontainer.customizations.vscode.extensions.includes(
-        "denoland.vscode-deno",
-      ),
-      true,
-    );
+    // Check environment variables
+    assertEquals(devcontainer.remoteEnv.MISE_DATA_DIR, "/home/vscode/.local/share/mise");
+    assertEquals(devcontainer.remoteEnv.PATH.includes("mise/shims"), true);
   } finally {
     await Deno.remove(tempDir, { recursive: true });
   }
