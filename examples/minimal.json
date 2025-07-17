@@ -1,26 +1,23 @@
 {
-  "name": "minimal-deno",
+  "name": "minimal-package-manager",
   "components": [
-    {
-      "name": "apt.install",
-      "params": {
-        "packages": ["git", "curl"]
-      }
-    },
     "mise.setup",
     {
       "name": "mise.install",
       "params": {
         "packages": [
-          "deno@latest"
+          "deno@2",
+          "node@24"
         ]
       }
     },
+    "nix.setup",
     {
-      "name": "vscode.install",
+      "name": "nix.install",
       "params": {
-        "extensions": [
-          "denoland.vscode-deno"
+        "packages": [
+          "ripgrep",
+          "fd"
         ]
       }
     }

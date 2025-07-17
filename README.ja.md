@@ -59,10 +59,11 @@ deno task test
 
 - `apt.install` - システムパッケージ
 - `mise.setup` / `mise.install` - ランタイム管理
-- `nix.setup` / `nix.install` - Nixパッケージ
-- `firewall.setup` / `firewall.domain` - セキュリティ
+- `nix.setup` / `nix.install` - Home Manager対応Nixパッケージ
+- `firewall.setup` / `firewall.domain` / `firewall.github-api` - セキュリティ
 - `vscode.install` - VS Code拡張機能
 - `shell.setup` - シェル設定
+- `sudo.disable` - セキュリティ強化
 
 ## ドキュメント
 

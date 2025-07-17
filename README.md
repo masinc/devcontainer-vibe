@@ -61,10 +61,11 @@ deno task test
 
 - `apt.install` - System packages
 - `mise.setup` / `mise.install` - Runtime management
-- `nix.setup` / `nix.install` - Nix packages
-- `firewall.setup` / `firewall.domain` - Security
+- `nix.setup` / `nix.install` - Nix packages with Home Manager
+- `firewall.setup` / `firewall.domain` / `firewall.github-api` - Security
 - `vscode.install` - VS Code extensions
 - `shell.setup` - Shell configuration
+- `sudo.disable` - Security hardening
 
 ## Documentation
 

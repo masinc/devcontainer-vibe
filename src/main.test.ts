@@ -12,7 +12,7 @@ function parseCommandLineArgs(args: string[]) {
     output: {
       type: "string" as const,
       short: "o",
-      default: "generated-devcontainer",
+      default: ".",
     },
     help: {
       type: "boolean" as const,
@@ -31,7 +31,7 @@ Usage: deno run --allow-read --allow-write src/main.ts [OPTIONS]
 
 Options:
   -c, --config <path>    Path to configuration file (default: examples/minimal.json)
-  -o, --output <path>    Output directory (default: generated-devcontainer)
+  -o, --output <path>    Output directory (default: .)
   -h, --help             Show this help message
 
 Examples:
@@ -44,7 +44,7 @@ Deno.test("parseCommandLineArgs - default values", () => {
   const result = parseCommandLineArgs([]);
 
   assertEquals(result.values.config, "examples/minimal.json");
-  assertEquals(result.values.output, "generated-devcontainer");
+  assertEquals(result.values.output, ".");
   assertEquals(result.values.help, false);
 });
 
@@ -52,7 +52,7 @@ Deno.test("parseCommandLineArgs - custom config", () => {
   const result = parseCommandLineArgs(["--config", "my-config.json"]);
 
   assertEquals(result.values.config, "my-config.json");
-  assertEquals(result.values.output, "generated-devcontainer");
+  assertEquals(result.values.output, ".");
   assertEquals(result.values.help, false);
 });
 
@@ -130,7 +130,7 @@ Deno.test("formatHelpMessage - contains default values", () => {
   const help = formatHelpMessage();
 
   assertEquals(help.includes("examples/minimal.json"), true);
-  assertEquals(help.includes("generated-devcontainer"), true);
+  assertEquals(help.includes("."), true);
 });
 
 // Skip this test as parseArgs throws for unknown flags
@@ -140,7 +140,7 @@ Deno.test("formatHelpMessage - contains default values", () => {
 
 //   // Should still have default values
 //   assertEquals(result.values.config, "examples/minimal.json");
-//   assertEquals(result.values.output, "generated-devcontainer");
+//   assertEquals(result.values.output, ".");
 //   assertEquals(result.values.help, false);
 // });
 

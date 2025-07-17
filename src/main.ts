@@ -16,7 +16,7 @@ Usage:
 
 Options:
   --config <path>    Configuration file path (default: devcontainer-config.json)
-  --output <path>    Output directory (default: .devcontainer)
+  --output <path>    Output directory (default: current directory)
   --help             Show this help message
 
 Examples:
@@ -38,7 +38,7 @@ async function main(): Promise<void> {
         output: {
           type: "string",
           short: "o",
-          default: ".devcontainer",
+          default: ".",
         },
         help: {
           type: "boolean",

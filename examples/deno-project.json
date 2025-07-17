@@ -4,40 +4,38 @@
     {
       "name": "apt.install",
       "params": {
-        "packages": ["git", "curl", "ripgrep", "fd-find", "iptables"]
-      }
-    },
-    "mise.setup",
-    {
-      "name": "mise.install",
-      "params": {
         "packages": [
-          "deno@latest",
-          "node@lts"
-        ]
-      }
-    },
-    "nix.setup",
-    {
-      "name": "nix.install",
-      "params": {
-        "packages": [
-          "starship",
-          "fish"
+          "git",
+          "curl",
+          "iptables",
+          "ipset",
+          "iproute2",
+          "dnsutils",
+          "sudo",
+          "fish",
+          "coreutils"
         ]
       }
     },
     "firewall.setup",
+    "mise.setup",
+    "nix.setup",
     {
-      "name": "firewall.domain",
+      "name": "mise.install",
       "params": {
-        "presets": [
-          "github",
-          "deno",
-          "npm"
-        ],
-        "allows": [
-          "starship.rs"
+        "packages": [
+          "deno@2",
+          "node@lts"
+        ]
+      }
+    },
+    {
+      "name": "nix.install",
+      "params": {
+        "packages": [
+          "ripgrep",
+          "fd",
+          "starship"
         ]
       }
     },
@@ -46,8 +44,18 @@
       "params": {
         "extensions": [
           "denoland.vscode-deno",
-          "esbenp.prettier-vscode",
           "eamodio.gitlens"
+        ]
+      }
+    },
+    "firewall.github-api",
+    {
+      "name": "firewall.domain",
+      "params": {
+        "presets": [
+          "github",
+          "deno",
+          "npm"
         ]
       }
     },
@@ -56,6 +64,9 @@
       "params": {
         "shell": "fish"
       }
+    },
+    {
+      "name": "sudo.disable"
     }
   ]
 }

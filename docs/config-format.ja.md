@@ -189,26 +189,42 @@ RUN nix-env -iA nixpkgs.starship nixpkgs.fish nixpkgs.ripgrep
 
 - `scripts/firewall-setup.sh`: 基本的なiptables設定スクリプト
 
-#### `firewall.domains`
+#### `firewall.domain`
 
-特定のドメインを許可するようにファイアウォールを設定します。
+プリセットまたはカスタム許可を使用して、特定のドメインを許可するようにファイアウォールを設定します。
 
 ```json
 {
-  "component": "firewall.domains",
+  "component": "firewall.domain",
   "params": {
-    "domains": ["github.com", "deno.land", "jsr.io", "registry.npmjs.org"]
+    "presets": ["github", "deno", "npm"],
+    "allows": ["custom-domain.com"]
   }
 }
 ```
 
 **パラメータ:**
 
-- `domains` (文字列の配列): 許可するドメイン名のリスト
+- `presets` (文字列の配列, オプション): 事前定義されたドメインセット (github, deno, npm, nix等)
+- `allows` (文字列の配列, オプション): 許可するカスタムドメイン名
 
 **生成されるファイル:**
 
-- `scripts/firewall-domains.sh`: ドメイン固有のファイアウォールルール
+- `scripts/firewall-domain.sh`: ドメイン固有のファイアウォールルール
+
+#### `firewall.github-api`
+
+GitHub APIから動的IP範囲を取得してファイアウォールを設定します。
+
+```json
+"firewall.github-api"
+```
+
+**パラメータ:** なし
+
+**生成されるファイル:**
+
+- `scripts/firewall-github-dynamic.sh`: GitHub API ベースのIP範囲設定
 
 ### 5. VS Code拡張機能
 
@@ -269,6 +285,22 @@ vscodeユーザーのデフォルトシェルを設定します。
 ```dockerfile
 RUN chsh -s /bin/fish vscode
 ```
+
+### 7. セキュリティ強化
+
+#### `sudo.disable`
+
+セキュリティ強化のためsudoアクセスを無効化します。
+
+```json
+"sudo.disable"
+```
+
+**パラメータ:** なし
+
+**生成されるファイル:**
+
+- `scripts/disable-sudo.sh`: sudoアクセスを削除し、sudoバイナリを使用不可にする
 
 ## 高度な使用方法
 

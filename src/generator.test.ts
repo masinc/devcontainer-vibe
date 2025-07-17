@@ -9,7 +9,7 @@ Deno.test("DevcontainerGenerator - generate creates correct Dockerfile", async (
   try {
     await generator.generate("examples/minimal.json", tempDir);
 
-    const dockerfile = await Deno.readTextFile(join(tempDir, "Dockerfile"));
+    const dockerfile = await Deno.readTextFile(join(tempDir, ".devcontainer", "Dockerfile"));
 
     // Check basic structure
     assertEquals(
@@ -40,7 +40,7 @@ Deno.test("DevcontainerGenerator - generate creates correct devcontainer.json", 
     await generator.generate("examples/minimal.json", tempDir);
 
     const devcontainerContent = await Deno.readTextFile(
-      join(tempDir, "devcontainer.json"),
+      join(tempDir, ".devcontainer", "devcontainer.json"),
     );
     const devcontainer = JSON.parse(devcontainerContent);
 
@@ -69,7 +69,7 @@ Deno.test("DevcontainerGenerator - generate creates scripts when needed", async 
   try {
     await generator.generate("examples/deno-project.json", tempDir);
 
-    const scriptsDir = join(tempDir, "scripts");
+    const scriptsDir = join(tempDir, ".devcontainer", "scripts");
 
     // Check scripts directory exists
     const scriptsInfo = await Deno.stat(scriptsDir);
@@ -129,7 +129,7 @@ Deno.test("DevcontainerGenerator - mergeConfig handles arrays", async () => {
     await generator.generate(configPath, join(tempDir, "output"));
 
     const devcontainerContent = await Deno.readTextFile(
-      join(tempDir, "output", "devcontainer.json"),
+      join(tempDir, "output", ".devcontainer", "devcontainer.json"),
     );
     const devcontainer = JSON.parse(devcontainerContent);
 
@@ -175,7 +175,7 @@ Deno.test("DevcontainerGenerator - processes multiple apt.install components", a
     await generator.generate(configPath, join(tempDir, "output"));
 
     const dockerfile = await Deno.readTextFile(
-      join(tempDir, "output", "Dockerfile"),
+      join(tempDir, "output", ".devcontainer", "Dockerfile"),
     );
 
     // Should have multiple apt install commands

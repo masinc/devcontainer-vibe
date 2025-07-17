@@ -125,7 +125,7 @@ export const ComponentSchema = z.discriminatedUnion("name", [
 
   // ファイアウォール GitHub動的IP設定
   z.object({
-    name: z.literal("firewall.github"),
+    name: z.literal("firewall.github-api"),
   }),
 
   // sudo無効化

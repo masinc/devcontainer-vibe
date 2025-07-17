@@ -192,26 +192,42 @@ Sets up basic firewall rules.
 
 - `scripts/firewall-setup.sh`: Basic iptables configuration script
 
-#### `firewall.domains`
+#### `firewall.domain`
 
-Configures firewall to allow specific domains.
+Configures firewall to allow specific domains using presets or custom allows.
 
 ```json
 {
-  "component": "firewall.domains",
+  "component": "firewall.domain",
   "params": {
-    "domains": ["github.com", "deno.land", "jsr.io", "registry.npmjs.org"]
+    "presets": ["github", "deno", "npm"],
+    "allows": ["custom-domain.com"]
   }
 }
 ```
 
 **Parameters:**
 
-- `domains` (array of strings): List of domain names to allow
+- `presets` (array of strings, optional): Predefined domain sets (github, deno, npm, nix, etc.)
+- `allows` (array of strings, optional): Custom domain names to allow
 
 **Generated Files:**
 
-- `scripts/firewall-domains.sh`: Domain-specific firewall rules
+- `scripts/firewall-domain.sh`: Domain-specific firewall rules
+
+#### `firewall.github-api`
+
+Configures firewall to allow GitHub's dynamic IP ranges from API.
+
+```json
+"firewall.github-api"
+```
+
+**Parameters:** None
+
+**Generated Files:**
+
+- `scripts/firewall-github-dynamic.sh`: GitHub API-based IP range configuration
 
 ### 5. VS Code Extensions
 
@@ -272,6 +288,22 @@ Sets the default shell for the vscode user.
 ```dockerfile
 RUN chsh -s /bin/fish vscode
 ```
+
+### 7. Security Hardening
+
+#### `sudo.disable`
+
+Disables sudo access for security hardening.
+
+```json
+"sudo.disable"
+```
+
+**Parameters:** None
+
+**Generated Files:**
+
+- `scripts/disable-sudo.sh`: Removes sudo access and makes sudo binary unusable
 
 ## Advanced Usage
 
