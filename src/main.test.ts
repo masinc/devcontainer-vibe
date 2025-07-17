@@ -19,6 +19,10 @@ function parseCommandLineArgs(args: string[]) {
       short: "h",
       default: false,
     },
+    overwrite: {
+      type: "boolean" as const,
+      default: false,
+    },
   };
 
   return parseArgs({ args, options });
@@ -32,6 +36,7 @@ Usage: deno run --allow-read --allow-write src/main.ts [OPTIONS]
 Options:
   -c, --config <path>    Path to configuration file (default: examples/minimal.json)
   -o, --output <path>    Output directory (default: .)
+      --overwrite        Overwrite existing .devcontainer directory
   -h, --help             Show this help message
 
 Examples:
@@ -46,6 +51,7 @@ Deno.test("parseCommandLineArgs - default values", () => {
   assertEquals(result.values.config, "examples/minimal.json");
   assertEquals(result.values.output, ".");
   assertEquals(result.values.help, false);
+  assertEquals(result.values.overwrite, false);
 });
 
 Deno.test("parseCommandLineArgs - custom config", () => {
@@ -210,4 +216,26 @@ Deno.test("parseCommandLineArgs - handles absolute paths", () => {
 
   assertEquals(result.values.config, "/absolute/path/to/config.json");
   assertEquals(result.values.output, "/absolute/path/to/output");
+});
+
+Deno.test("parseCommandLineArgs - overwrite flag", () => {
+  const result = parseCommandLineArgs(["--overwrite"]);
+
+  assertEquals(result.values.overwrite, true);
+  assertEquals(result.values.config, "examples/minimal.json");
+  assertEquals(result.values.output, ".");
+  assertEquals(result.values.help, false);
+});
+
+Deno.test("parseCommandLineArgs - overwrite with other flags", () => {
+  const result = parseCommandLineArgs([
+    "--config", "my-config.json",
+    "--output", "my-output",
+    "--overwrite"
+  ]);
+
+  assertEquals(result.values.config, "my-config.json");
+  assertEquals(result.values.output, "my-output");
+  assertEquals(result.values.overwrite, true);
+  assertEquals(result.values.help, false);
 });

@@ -6,14 +6,14 @@ import { join } from "@std/path";
 export class DevcontainerGenerator {
   private handlerFactory = new ComponentHandlerFactory();
 
-  async generate(configPath: string, outputDir: string): Promise<void> {
+  async generate(configPath: string, outputDir: string, overwrite = false): Promise<void> {
     // .devcontainer ディレクトリのパスを作成
     const devcontainerDir = join(outputDir, ".devcontainer");
 
-    // 出力ディレクトリの存在確認（テスト環境では無視）
-    if (await exists(devcontainerDir) && !outputDir.includes("/tmp/")) {
+    // 出力ディレクトリの存在確認
+    if (await exists(devcontainerDir) && !overwrite) {
       throw new Error(
-        `Output directory '${devcontainerDir}' already exists. Please remove it or use a different output directory.`,
+        `Output directory '${devcontainerDir}' already exists. Use --overwrite to overwrite it or choose a different output directory.`,
       );
     }
 

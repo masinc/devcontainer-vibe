@@ -5,6 +5,7 @@ interface CliArgs {
   config?: string;
   output?: string;
   help?: boolean;
+  overwrite?: boolean;
 }
 
 function showHelp(): void {
@@ -17,6 +18,7 @@ Usage:
 Options:
   --config <path>    Configuration file path (default: devcontainer-config.json)
   --output <path>    Output directory (default: current directory)
+  --overwrite        Overwrite existing .devcontainer directory
   --help             Show this help message
 
 Examples:
@@ -45,6 +47,10 @@ async function main(): Promise<void> {
           short: "h",
           default: false,
         },
+        overwrite: {
+          type: "boolean",
+          default: false,
+        },
       },
       strict: true,
       allowPositionals: true,
@@ -68,7 +74,7 @@ async function main(): Promise<void> {
     console.log(`Generating devcontainer from: ${args.config}`);
     console.log(`Output directory: ${args.output}`);
 
-    await generator.generate(args.config!, args.output!);
+    await generator.generate(args.config!, args.output!, args.overwrite!);
 
     console.log("✅ Devcontainer generated successfully!");
   } catch (error) {

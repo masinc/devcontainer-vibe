@@ -291,3 +291,49 @@ Deno.test("DevcontainerGenerator - merges multiple shell.post-create components"
     await Deno.remove(tempDir, { recursive: true });
   }
 });
+
+Deno.test("DevcontainerGenerator - overwrite existing directory", async () => {
+  const generator = new DevcontainerGenerator();
+  const tempDir = await Deno.makeTempDir();
+
+  try {
+    const configContent = JSON.stringify({
+      name: "overwrite-test",
+      components: ["mise.setup"],
+    });
+
+    const configPath = join(tempDir, "overwrite-config.json");
+    await Deno.writeTextFile(configPath, configContent);
+
+    const outputDir = join(tempDir, "my-output"); // /tmp/ を含まないパスにする
+    const devcontainerDir = join(outputDir, ".devcontainer");
+
+    // 最初の生成
+    await generator.generate(configPath, outputDir);
+    
+    // ディレクトリが存在することを確認
+    const exists1 = await Deno.stat(devcontainerDir).then(() => true).catch(() => false);
+    assertEquals(exists1, true);
+
+    // overwrite=false では失敗するはず
+    try {
+      await generator.generate(configPath, outputDir, false);
+      throw new Error("Should have thrown directory exists error");
+    } catch (error) {
+      assertEquals(
+        (error as Error).message.includes("already exists"),
+        true,
+      );
+    }
+
+    // overwrite=true では成功するはず
+    await generator.generate(configPath, outputDir, true);
+    
+    // ディレクトリがまだ存在することを確認
+    const exists2 = await Deno.stat(devcontainerDir).then(() => true).catch(() => false);
+    assertEquals(exists2, true);
+
+  } finally {
+    await Deno.remove(tempDir, { recursive: true });
+  }
+});
