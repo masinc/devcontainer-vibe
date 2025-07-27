@@ -7,7 +7,8 @@
     "dev": "deno run --watch src/main.ts",
     "generate": "deno run --allow-read --allow-write src/main.ts --output generated-devcontainer",
     "generate:prod": "deno run --allow-read --allow-write src/main.ts",
-    "test": "deno test --allow-read --allow-write"
+    "test": "deno test --allow-read --allow-write",
+    "generate-schema": "deno run src/bin/generate-schema.ts"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@1",
