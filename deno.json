@@ -1,4 +1,8 @@
 {
+  "name": "@masinc/devcontainer-vibe",
+  "version": "0.1.0",
+  "license": "MIT",
+  "exports": "./src/mod.ts",
   "tasks": {
     "dev": "deno run --watch src/main.ts",
     "generate": "deno run --allow-read --allow-write src/main.ts --output generated-devcontainer",
