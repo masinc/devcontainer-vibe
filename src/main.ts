@@ -15,7 +15,7 @@ function showHelp(): void {
 Devcontainer Vibe - Generate devcontainer from configuration
 
 Usage:
-  deno run jsr:@masinc/devcontainer-vibe [options]
+  deno run -RW jsr:@masinc/devcontainer-vibe [options]
 
 Options:
   --config <path>    Configuration file path (default: devcontainer-config.json)
@@ -25,10 +25,10 @@ Options:
   --help             Show this help message
 
 Examples:
-  deno run jsr:@masinc/devcontainer-vibe --init minimal
-  deno run jsr:@masinc/devcontainer-vibe --init deno --overwrite
-  deno run jsr:@masinc/devcontainer-vibe --config my-config.json --output my-devcontainer
-  deno run jsr:@masinc/devcontainer-vibe --config config.json --overwrite
+  deno run -RW jsr:@masinc/devcontainer-vibe --init minimal
+  deno run -RW jsr:@masinc/devcontainer-vibe --init deno --overwrite
+  deno run -RW jsr:@masinc/devcontainer-vibe --config my-config.json --output my-devcontainer
+  deno run -RW jsr:@masinc/devcontainer-vibe --config config.json --overwrite
 `);
 }
 

@@ -20,15 +20,15 @@
 
 ```bash
 # 最初にサンプル設定を生成
-deno run jsr:@masinc/devcontainer-vibe --init minimal
+deno run -RW jsr:@masinc/devcontainer-vibe --init minimal
 # または
-deno run jsr:@masinc/devcontainer-vibe --init deno
+deno run -RW jsr:@masinc/devcontainer-vibe --init deno
 
 # 既存の設定ファイルを上書き
-deno run jsr:@masinc/devcontainer-vibe --init deno --overwrite
+deno run -RW jsr:@masinc/devcontainer-vibe --init deno --overwrite
 
 # devcontainerを生成
-deno run jsr:@masinc/devcontainer-vibe --config devcontainer-config.json
+deno run -RW jsr:@masinc/devcontainer-vibe --config devcontainer-config.json
 ```
 
 ### ソースから
@@ -166,7 +166,7 @@ deno task test
 ## 要件
 
 - Deno 2.0+
-- 出力ディレクトリへの書き込み権限
+- 設定ファイルと出力ディレクトリへの読み書き権限
 
 ## ライセンス
 

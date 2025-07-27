@@ -22,15 +22,15 @@ declarative configuration files.
 
 ```bash
 # Generate sample configuration first
-deno run jsr:@masinc/devcontainer-vibe --init minimal
+deno run -RW jsr:@masinc/devcontainer-vibe --init minimal
 # or
-deno run jsr:@masinc/devcontainer-vibe --init deno
+deno run -RW jsr:@masinc/devcontainer-vibe --init deno
 
 # Overwrite existing configuration file
-deno run jsr:@masinc/devcontainer-vibe --init deno --overwrite
+deno run -RW jsr:@masinc/devcontainer-vibe --init deno --overwrite
 
 # Then generate devcontainer
-deno run jsr:@masinc/devcontainer-vibe --config devcontainer-config.json
+deno run -RW jsr:@masinc/devcontainer-vibe --config devcontainer-config.json
 ```
 
 ### From Source
@@ -197,7 +197,7 @@ deno task test
 ## Requirements
 
 - Deno 2.0+
-- Write permissions for output directory
+- Read/Write permissions for configuration and output directories
 
 ## License
 

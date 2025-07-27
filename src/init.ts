@@ -38,7 +38,7 @@ export async function initConfig(templateName: string, overwrite = false): Promi
   console.log(`📝 Template: ${templateName}`);
   console.log(`\nNext steps:`);
   console.log(`1. Edit ${configPath} to customize your configuration`);
-  console.log(`2. Run: deno run jsr:@masinc/devcontainer-vibe --config ${configPath}`);
+  console.log(`2. Run: deno run -RW jsr:@masinc/devcontainer-vibe --config ${configPath}`);
 }
 
 export function getAvailableTemplates(): string[] {
