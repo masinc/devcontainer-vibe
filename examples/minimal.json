@@ -21,6 +21,14 @@
       }
     },
     {
+      "name": "vscode.install",
+      "params": {
+        "extensions": [
+          "Anthropic.claude-code"
+        ]
+      }
+    },
+    {
       "name": "shell.post-create",
       "params": {
         "user": "vscode",
