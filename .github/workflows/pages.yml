@@ -1,0 +1,168 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/types.ts'
+      - 'src/bin/generate-schema.ts'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  generate-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Generate JSON Schema
+        run: |
+          echo "Generating JSON Schema..."
+          deno task generate-schema > schema.json
+
+      - name: Create Pages directory
+        run: |
+          mkdir -p _site
+          cp schema.json _site/
+          
+          # Create index.html for schema documentation
+          cat > _site/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Devcontainer Vibe - JSON Schema</title>
+            <style>
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 2rem;
+                line-height: 1.6;
+                color: #333;
+              }
+              .header {
+                text-align: center;
+                margin-bottom: 3rem;
+                padding-bottom: 1rem;
+                border-bottom: 2px solid #eee;
+              }
+              .schema-links {
+                display: grid;
+                gap: 1rem;
+                margin: 2rem 0;
+              }
+              .schema-link {
+                display: block;
+                padding: 1rem;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                text-decoration: none;
+                color: #333;
+                transition: all 0.2s;
+              }
+              .schema-link:hover {
+                border-color: #0066cc;
+                background-color: #f8f9fa;
+              }
+              .usage-example {
+                background-color: #f8f9fa;
+                padding: 1rem;
+                border-radius: 8px;
+                margin: 1rem 0;
+              }
+              pre {
+                background-color: #f1f3f4;
+                padding: 1rem;
+                border-radius: 4px;
+                overflow-x: auto;
+              }
+              code {
+                background-color: #f1f3f4;
+                padding: 0.2rem 0.4rem;
+                border-radius: 3px;
+                font-size: 0.9em;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>🚀 Devcontainer Vibe</h1>
+              <p>JSON Schema for configuration validation and IDE support</p>
+            </div>
+
+            <div class="schema-links">
+              <a href="schema.json" class="schema-link">
+                <h3>📄 JSON Schema</h3>
+                <p>Download the JSON Schema file for Devcontainer Vibe configurations</p>
+                <code>schema.json</code>
+              </a>
+            </div>
+
+            <h2>🔧 Usage</h2>
+            
+            <h3>VS Code Integration</h3>
+            <div class="usage-example">
+              <p>Add to your <code>devcontainer-config.json</code>:</p>
+              <pre>{
+            "$schema": "https://masinc.github.io/devcontainer-vibe/schema.json",
+            "name": "my-project",
+            "components": [
+              // Your components here with auto-completion!
+            ]
+          }</pre>
+            </div>
+
+            <h3>Command Line Validation</h3>
+            <div class="usage-example">
+              <p>Generate sample configuration:</p>
+              <pre>deno run -RW jsr:@masinc/devcontainer-vibe --init minimal</pre>
+              
+              <p>Generate devcontainer:</p>
+              <pre>deno run -RW jsr:@masinc/devcontainer-vibe --config devcontainer-config.json</pre>
+            </div>
+
+            <h2>📚 Documentation</h2>
+            <p>For complete documentation, visit the <a href="https://github.com/masinc/devcontainer-vibe">GitHub repository</a>.</p>
+
+            <h2>🏷️ Schema Information</h2>
+            <ul>
+              <li><strong>Version:</strong> Generated from latest main branch</li>
+              <li><strong>Specification:</strong> JSON Schema Draft 2020-12</li>
+              <li><strong>Auto-updated:</strong> On every push to main branch</li>
+              <li><strong>Components:</strong> All supported devcontainer components</li>
+            </ul>
+          </body>
+          </html>
+          EOF
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
