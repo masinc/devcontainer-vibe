@@ -1,4 +1,4 @@
-# Devcontainer Generator
+# Devcontainer Vibe
 
 宣言的な設定ファイルからカスタマイズされたdevcontainer環境を生成するDenoベースのツールです。
 
@@ -14,12 +14,24 @@
 - ✅ **型安全な設定** - Zod v4スキーマ検証
 - 🧪 **包括的テスト** - 例を含む完全なテストカバレッジ
 
-## クイックスタート
+## インストール
+
+### JSRから（推奨）
+
+```bash
+# グローバルインストール
+deno add @masinc/devcontainer-vibe
+
+# またはインストール無しで直接使用
+deno run jsr:@masinc/devcontainer-vibe --config config.json
+```
+
+### ソースから
 
 ```bash
 # リポジトリをクローン
-git clone <repository-url>
-cd devcontainer-generator
+git clone https://github.com/masinc/devcontainer-vibe.git
+cd devcontainer-vibe
 
 # 例の設定からdevcontainerを生成
 deno task generate --config examples/minimal.json
@@ -39,16 +51,23 @@ deno task test
   "description": "My development environment",
   "components": [
     {
-      "component": "apt.install",
+      "name": "apt.install",
       "params": {
         "packages": ["git", "curl", "ripgrep"]
       }
     },
     "mise.setup",
     {
-      "component": "mise.install",
+      "name": "mise.install",
       "params": {
         "packages": ["deno@latest", "node@lts"]
+      }
+    },
+    {
+      "name": "shell.post-create",
+      "params": {
+        "user": "vscode",
+        "commands": ["echo 'セットアップ完了！'", "npm install -g typescript"]
       }
     }
   ]
@@ -68,8 +87,8 @@ deno task test
 ### セキュリティ & ファイアウォール
 
 - `firewall.setup` - ipset対応基本ファイアウォール設定（単一利用のみ）
-- `firewall.domain` - ドメインベースファイアウォールルール（複数利用可能）
-- `firewall.github-api` - GitHub API IP範囲（単一利用のみ）
+- `firewall.domain` - 自動実行対応ドメインベースファイアウォールルール（複数利用可能）
+- `firewall.github-api` - 自動実行対応GitHub API IP範囲（単一利用のみ）
 - `sudo.disable` - セキュリティ強化（単一利用のみ）
 
 ### 開発環境
@@ -84,6 +103,22 @@ deno task test
 - **単一利用のみ**: セットアップコンポーネントは設定ごとに一度だけ使用可能
 - **複数利用可能**: インストールとコマンドコンポーネントは複数回使用可能
 - **自動マージ**: 同じコンポーネントの複数回使用は自動的にマージされる
+
+## CLI使用方法
+
+```bash
+# 基本使用
+devcontainer-vibe --config config.json
+
+# 出力ディレクトリを指定
+devcontainer-vibe --config config.json --output my-project
+
+# 既存ディレクトリを強制上書き
+devcontainer-vibe --config config.json --output existing-dir --overwrite
+
+# ヘルプを表示
+devcontainer-vibe --help
+```
 
 ## ドキュメント
 

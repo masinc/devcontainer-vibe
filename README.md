@@ -1,4 +1,4 @@
-# Devcontainer Generator
+# Devcontainer Vibe
 
 A Deno-based tool for generating customized devcontainer environments from
 declarative configuration files.
@@ -16,12 +16,24 @@ declarative configuration files.
 - ✅ **Type-safe configuration** - Zod v4 schema validation
 - 🧪 **Comprehensive testing** - Full test coverage with examples
 
-## Quick Start
+## Installation
+
+### From JSR (Recommended)
+
+```bash
+# Install globally
+deno add @masinc/devcontainer-vibe
+
+# Or use directly without installation
+deno run jsr:@masinc/devcontainer-vibe --config config.json
+```
+
+### From Source
 
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd devcontainer-generator
+git clone https://github.com/masinc/devcontainer-vibe.git
+cd devcontainer-vibe
 
 # Generate devcontainer from example configuration
 deno task generate --config examples/minimal.json
@@ -116,8 +128,8 @@ This generates separate script files:
 ### Security & Firewall
 
 - `firewall.setup` - Basic firewall setup with ipset (single use only)
-- `firewall.domain` - Domain-based firewall rules (multiple use allowed)
-- `firewall.github-api` - GitHub API IP ranges (single use only)
+- `firewall.domain` - Domain-based firewall rules with auto-execution (multiple use allowed)
+- `firewall.github-api` - GitHub API IP ranges with auto-execution (single use only)
 - `sudo.disable` - Security hardening (single use only)
 
 ### Development Environment
@@ -136,6 +148,22 @@ This generates separate script files:
   times
 - **Automatic merging**: Multiple uses of the same component are automatically
   merged
+
+## CLI Usage
+
+```bash
+# Basic usage
+devcontainer-vibe --config config.json
+
+# Specify output directory
+devcontainer-vibe --config config.json --output my-project
+
+# Force overwrite existing directory
+devcontainer-vibe --config config.json --output existing-dir --overwrite
+
+# Show help
+devcontainer-vibe --help
+```
 
 ## Documentation
 
