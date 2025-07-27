@@ -21,8 +21,16 @@ declarative configuration files.
 ### From JSR (Recommended)
 
 ```bash
-# Use directly without installation
-deno run jsr:@masinc/devcontainer-vibe --config config.json
+# Generate sample configuration first
+deno run jsr:@masinc/devcontainer-vibe --init minimal
+# or
+deno run jsr:@masinc/devcontainer-vibe --init deno
+
+# Overwrite existing configuration file
+deno run jsr:@masinc/devcontainer-vibe --init deno --overwrite
+
+# Then generate devcontainer
+deno run jsr:@masinc/devcontainer-vibe --config devcontainer-config.json
 ```
 
 ### From Source
@@ -36,7 +44,7 @@ cd devcontainer-vibe
 deno task generate --config examples/minimal.json
 
 # Generate to specific output directory
-deno task generate --config examples/deno-project.json --output my-devcontainer
+deno task generate --config examples/deno.json --output my-devcontainer
 
 # Run tests
 deno task test

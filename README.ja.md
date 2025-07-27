@@ -19,8 +19,16 @@
 ### JSRから（推奨）
 
 ```bash
-# インストール無しで直接使用
-deno run jsr:@masinc/devcontainer-vibe --config config.json
+# 最初にサンプル設定を生成
+deno run jsr:@masinc/devcontainer-vibe --init minimal
+# または
+deno run jsr:@masinc/devcontainer-vibe --init deno
+
+# 既存の設定ファイルを上書き
+deno run jsr:@masinc/devcontainer-vibe --init deno --overwrite
+
+# devcontainerを生成
+deno run jsr:@masinc/devcontainer-vibe --config devcontainer-config.json
 ```
 
 ### ソースから
@@ -34,7 +42,7 @@ cd devcontainer-vibe
 deno task generate --config examples/minimal.json
 
 # 特定の出力ディレクトリに生成
-deno task generate --config examples/deno-project.json --output my-devcontainer
+deno task generate --config examples/deno.json --output my-devcontainer
 
 # テストを実行
 deno task test

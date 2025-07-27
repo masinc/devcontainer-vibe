@@ -1,29 +1,34 @@
 import { parseArgs } from "node:util";
 import { DevcontainerGenerator } from "./generator.ts";
+import { initConfig } from "./init.ts";
 
 interface CliArgs {
   config?: string;
   output?: string;
   help?: boolean;
   overwrite?: boolean;
+  init?: string;
 }
 
 function showHelp(): void {
   console.log(`
-Devcontainer Generator - Generate devcontainer from configuration
+Devcontainer Vibe - Generate devcontainer from configuration
 
 Usage:
-  deno run src/main.ts [options]
+  deno run jsr:@masinc/devcontainer-vibe [options]
 
 Options:
   --config <path>    Configuration file path (default: devcontainer-config.json)
   --output <path>    Output directory (default: current directory)
   --overwrite        Overwrite existing .devcontainer directory
+  --init <template>  Generate sample configuration file (minimal, deno)
   --help             Show this help message
 
 Examples:
-  deno run src/main.ts --config my-config.json --output my-devcontainer
-  deno run src/main.ts --config examples/deno-project.json
+  deno run jsr:@masinc/devcontainer-vibe --init minimal
+  deno run jsr:@masinc/devcontainer-vibe --init deno --overwrite
+  deno run jsr:@masinc/devcontainer-vibe --config my-config.json --output my-devcontainer
+  deno run jsr:@masinc/devcontainer-vibe --config config.json --overwrite
 `);
 }
 
@@ -51,6 +56,9 @@ async function main(): Promise<void> {
           type: "boolean",
           default: false,
         },
+        init: {
+          type: "string",
+        },
       },
       strict: true,
       allowPositionals: true,
@@ -60,6 +68,11 @@ async function main(): Promise<void> {
 
     if (args.help) {
       showHelp();
+      return;
+    }
+
+    if (args.init) {
+      await initConfig(args.init, args.overwrite);
       return;
     }
 
