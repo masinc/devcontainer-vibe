@@ -160,7 +160,12 @@ echo "✅ Domain IPs added to firewall-allowed-domains ipset"
 `,
     };
 
-    return this.createResult([], {}, scripts);
+    // postCreateCommandでファイアウォールドメインスクリプトを実行
+    const devcontainerConfig = {
+      postCreateCommand: "sudo /usr/local/scripts/firewall-domain.sh",
+    };
+
+    return this.createResult([], devcontainerConfig, scripts);
   }
 }
 
@@ -208,6 +213,12 @@ echo "✅ GitHub dynamic IP ranges added to firewall-allowed-domains ipset"
 `,
     };
 
-    return this.createResult([], {}, scripts);
+    // postCreateCommandでGitHub APIファイアウォールスクリプトを実行
+    const devcontainerConfig = {
+      postCreateCommand: "sudo /usr/local/scripts/firewall-github-dynamic.sh",
+    };
+
+    return this.createResult([], devcontainerConfig, scripts);
   }
 }
+

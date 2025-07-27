@@ -146,8 +146,11 @@ Deno.test("FirewallGithubApiHandler - valid component", () => {
   const result = handler.handle("firewall.github-api");
 
   assertEquals(result.dockerfileLines.length, 0);
-  assertEquals(Object.keys(result.devcontainerConfig).length, 0);
   assertEquals(Object.keys(result.scripts).length, 1);
+  assertEquals(
+    result.devcontainerConfig.postCreateCommand,
+    "sudo /usr/local/scripts/firewall-github-dynamic.sh",
+  );
   assertEquals("firewall-github-dynamic.sh" in result.scripts, true);
   assertEquals(
     result.scripts["firewall-github-dynamic.sh"].includes(
@@ -156,3 +159,4 @@ Deno.test("FirewallGithubApiHandler - valid component", () => {
     true,
   );
 });
+

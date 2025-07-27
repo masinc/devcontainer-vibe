@@ -145,8 +145,15 @@ ${rootCommands.join("\n")}
       execCommands.push("sudo /usr/local/scripts/shell-post-create-root.sh");
     }
 
-    // 実行コマンドを結合
-    allDevcontainerConfig.postCreateCommand = execCommands.join(" && ");
+    // 実行コマンドを結合（既存のpostCreateCommandがある場合は結合）
+    const existingCommand = allDevcontainerConfig.postCreateCommand as string;
+    const newCommands = execCommands.join(" && ");
+    
+    if (existingCommand) {
+      allDevcontainerConfig.postCreateCommand = `${existingCommand} && ${newCommands}`;
+    } else {
+      allDevcontainerConfig.postCreateCommand = newCommands;
+    }
   }
 
   private mergeConfig(
@@ -189,8 +196,13 @@ ${rootCommands.join("\n")}
         }
         target[key] = targetEnv;
       } else if (key === "postCreateCommand" && typeof value === "string") {
-        // postCreateCommandは上書きする（shell.post-createが優先）
-        target[key] = value;
+        // postCreateCommandは結合する
+        const existing = target[key] as string;
+        if (existing) {
+          target[key] = `${existing} && ${value}`;
+        } else {
+          target[key] = value;
+        }
       } else if (Array.isArray(value)) {
         const targetArray = target[key] as unknown[] || [];
         const newArray = targetArray.concat(value);
