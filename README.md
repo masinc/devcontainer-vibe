@@ -21,10 +21,7 @@ declarative configuration files.
 ### From JSR (Recommended)
 
 ```bash
-# Install globally
-deno add @masinc/devcontainer-vibe
-
-# Or use directly without installation
+# Use directly without installation
 deno run jsr:@masinc/devcontainer-vibe --config config.json
 ```
 

@@ -19,10 +19,7 @@
 ### JSRから（推奨）
 
 ```bash
-# グローバルインストール
-deno add @masinc/devcontainer-vibe
-
-# またはインストール無しで直接使用
+# インストール無しで直接使用
 deno run jsr:@masinc/devcontainer-vibe --config config.json
 ```
 
