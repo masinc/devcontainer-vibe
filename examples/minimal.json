@@ -1,4 +1,5 @@
 {
+  "$schema": "https://masinc.github.io/devcontainer-vibe/schema.json",
   "name": "minimal-package-manager",
   "components": [
     "mise.setup",
