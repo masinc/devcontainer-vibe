@@ -145,7 +145,7 @@ if [ -n "$IPS" ]; then
   done
 else
   echo "⚠️  Failed to resolve ${domain}"
-fi`).join("\\n");
+fi`).join("\n");
 
     const scripts = {
       "firewall-domain.sh": `#!/usr/bin/sudo /bin/bash
